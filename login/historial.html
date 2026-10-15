@@ -27,12 +27,9 @@ body{background:#f5f5f5;zoom:0.88}
 .table{width:100%;border-collapse:collapse;min-width:1020px}
 .table th{font-size:10px;font-weight:800;color:#6b7280;text-transform:uppercase;padding:10px 8px;background:#fafafa;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:left}
 .table td{font-size:11px;padding:8px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
-
-/* COLORES NEON QUE PEDISTE */
-.badge-serv{border-radius:999px;padding:5px 10px;font-size:10px;font-weight:800;display:inline-flex;letter-spacing:0.3px}
+.badge-serv{border-radius:999px;padding:5px 10px;font-size:10px;font-weight:800;display:inline-flex}
 .badge-moto{background:#ff0033;color:#fff;box-shadow:0 0 8px rgba(255,0,51,0.7);border:1px solid #ff3355}
 .badge-trans{background:#ffe600;color:#111;box-shadow:0 0 10px rgba(255,230,0,0.8);border:1px solid #fff176}
-
 .badge-pago{border-radius:999px;padding:5px 12px;font-weight:800;font-size:10px;display:inline-flex;cursor:pointer;border:none}
 .badge-pago-si{background:#16a34a;color:#fff}.badge-pago-no{background:#E10600;color:#fff}
 .badge-estado{border-radius:999px;padding:4px 10px;font-weight:800;font-size:10px;display:inline-flex}
@@ -49,7 +46,7 @@ body{background:#f5f5f5;zoom:0.88}
 <body>
 <div class="top"><div style="display:flex;gap:10px;align-items:center"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div><div class="total-ped" id="totalPed">Total: 0</div></div>
 <div class="main">
-<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Consulta y administra todos los pedidos.</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
+<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Orden por fecha - más reciente arriba</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
 <div class="filters"><div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div><div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div><div class="search-box"><input id="fBuscar" placeholder="Buscar aliado..."></div><button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button></div>
 <div class="aviso-slide">← Desliza para ver más →</div>
 <div class="table-wrap" id="wrapTabla"><table class="table"><thead><tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table><div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div></div>
@@ -61,29 +58,35 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 let ventas=[], filtradas=[], pagina=1, porPag=30, editId=null, primeraCarga=true;
 
-function getPagoPorTipo(tipo){
-  const t=(tipo||'').toLowerCase();
-  if(t.includes('trans')) return 10;
-  return 5;
-}
+function getPagoPorTipo(tipo){ const t=(tipo||'').toLowerCase(); return t.includes('trans')?10:5; }
 
 db.ref('ventas').on('value', snap=>{
  const v=snap.val()||{};
- const scrollPos = document.getElementById('wrapTabla').scrollLeft;
+ const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
+ const scrollY = window.scrollY;
  const prevPag = pagina;
- ventas=Object.entries(v).map(([id,d])=>({id,...d}));
- // ORDEN ESTRICTO NUMERICO DESCENDENTE
- ventas.sort((a,b)=>{
-   const pa=parseInt(a.pedido)||0;
-   const pb=parseInt(b.pedido)||0;
-   return pb-pa;
+ let lista=Object.entries(v).map(([id,d])=>({id,...d}));
+
+ // 1. ORDENAR POR FECHA ASCENDENTE PARA NUMERAR 1=mas viejo
+ lista.sort((a,b)=>{
+   const fa=a.fecha||''; const fb=b.fecha||'';
+   if(fa!==fb) return fa.localeCompare(fb);
+   return (a.timestamp||0)-(b.timestamp||0);
  });
+
+ // 2. ASIGNAR NUMERACION SECUENCIAL 1..833
+ lista.forEach((item, idx)=>{
+   item.numeroSecuencial = idx+1;
+ });
+
+ // 3. AHORA INVERTIR PARA MOSTRAR MAS RECIENTE ARRIBA
+ ventas = [...lista].reverse();
+
  if(primeraCarga){
    filtradas=[...ventas];
    primeraCarga=false;
    render();
  }else{
-   // Actualiza sin mandarte al inicio
    const ini=fIni.value, fin=fFin.value, mes=fMes.value, bus=fBuscar.value.toLowerCase().trim();
    filtradas=ventas.filter(v2=>{
     if(bus &&!(v2.cliente||'').toLowerCase().includes(bus)) return false;
@@ -92,7 +95,8 @@ db.ref('ventas').on('value', snap=>{
    });
    pagina=prevPag;
    render();
-   document.getElementById('wrapTabla').scrollLeft=scrollPos;
+   document.getElementById('wrapTabla').scrollLeft=scrollLeft;
+   window.scrollTo(0,scrollY);
  }
 });
 
@@ -111,17 +115,12 @@ function togglePago(id){
  const v=ventas.find(x=>x.id===id); if(!v) return;
  const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
  const pagoFijo=getPagoPorTipo(v.tipo);
- // Guarda scroll para no saltar
- const scrollPos = document.getElementById('wrapTabla').scrollLeft;
- const winScroll = window.scrollY;
+ const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
+ const scrollY = window.scrollY;
  if(isSi){
-   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', descuento:0, total:0, pago:0}).then(()=>{
-     setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollPos; window.scrollTo(0,winScroll); },50);
-   });
+   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', descuento:0, total:0, pago:0}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }else{
-   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:pagoFijo, total:pagoFijo, pago:pagoFijo}).then(()=>{
-     setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollPos; window.scrollTo(0,winScroll); },50);
-   });
+   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:pagoFijo, total:pagoFijo, pago:pagoFijo}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }
 }
 
@@ -139,7 +138,7 @@ function render(){
   const pagoMostrar=isSi?pagoFijo:0;
   const totalMostrar=isSi?pagoFijo:0;
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.pedido||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valor.toFixed(0)}</td><td>$${pagoMostrar.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
+  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valor.toFixed(0)}</td><td>$${pagoMostrar.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
   tbody.appendChild(tr);
  });
 }
