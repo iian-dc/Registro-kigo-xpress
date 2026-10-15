@@ -13,304 +13,115 @@ body{background:#f5f5f5;zoom:0.92}
 .top{height:56px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:sticky;top:0;z-index:50}
 .left{display:flex;align-items:center;gap:10px}
 .btn-x{width:32px;height:32px;background:#E10600;border:none;color:#fff;border-radius:8px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.logo-text{color:#fff;font-weight:800;font-size:14px}.red{color:#E10600}.logo-sub{color:#a3a3a3;font-size:8px;letter-spacing:1px;margin-top:-2px}
+.logo-text{color:#fff;font-weight:800;font-size:14px}.red{color:#E10600}.logo-sub{color:#a3a3a3;font-size:8px}
 .main{padding:12px}
-.title-sec{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-.title-sec h1{font-size:18px;font-weight:800}.title-sec p{font-size:11px;color:#6b7280}
 .tabs{display:flex;gap:8px;margin-bottom:12px;justify-content:space-between}
-.tab{flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:11px 8px;display:flex;align-items:center;gap:8px;justify-content:center;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap}
+.tab{flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:11px 8px;display:flex;align-items:center;gap:8px;justify-content:center;font-weight:800;font-size:11px;cursor:pointer}
 .tab.active{border-bottom:3px solid #E10600}
-.search-sec{background:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.search-box{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;height:38px;background:#fff}
+.search-sec{background:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;height:38px}
 .search-box input{border:none;outline:none;width:100%;font-size:12px}
 .filtro{border:1px solid #e5e7eb;border-radius:10px;padding:0 10px;height:38px;background:#fff;display:flex;align-items:center;gap:6px;font-size:12px}
 .filtro select{border:none;outline:none;background:transparent;font-size:12px}
 .table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto}
-.table{width:100%;border-collapse:collapse;min-width:760px}
+.table{width:100%;border-collapse:collapse;min-width:900px}
 .table th{background:#111;color:#fff;padding:12px 10px;font-size:11px;font-weight:700;text-align:left;white-space:nowrap}
 .table td{padding:10px;font-size:11.5px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
-.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#eee;border:1px solid #eee}
+.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#eee}
 .badge-estado{border-radius:999px;padding:6px 12px;font-size:10px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
 .activo{color:#00ff88;background:rgba(0,255,136,0.12);border:1px solid #00ff88;box-shadow:0 0 10px rgba(0,255,136,0.5)}
 .inactivo{color:#ff0033;background:rgba(255,0,51,0.12);border:1px solid #ff0033;box-shadow:0 0 10px rgba(255,0,51,0.6)}
 .descanso{color:#9ca3af;background:#f3f4f6;border:1px solid #e5e7eb}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.dot.activo{background:#00ff88;box-shadow:0 0 6px #00ff88}.dot.inactivo{background:#ff0033;box-shadow:0 0 6px #ff0033}.dot.descanso{background:#9ca3af}
 .act{display:flex;gap:6px}
 .btn-act{width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .btn-del{background:#E10600;color:#fff;border-color:#E10600}
-.footer-table{padding:10px 12px;font-size:10px;color:#94a3b8;border-top:1px solid #eee}
+.footer-table{padding:10px 12px;font-size:10px;color:#94a3b8}
 .aviso-slide{display:none;justify-content:center;font-size:10px;color:#E10600;font-weight:700;padding:6px 0}
-@media(max-width:768px){.tabs{gap:6px}.tab{font-size:10px;padding:10px 6px}.aviso-slide{display:flex}.search-sec{flex-direction:column;align-items:stretch}}
-
-/* MODALES */
+@media(max-width:768px){.aviso-slide{display:flex}.search-sec{flex-direction:column;align-items:stretch}}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
 .modal-bg.open{display:flex}
-.modal-card{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:pop.18s ease}
-@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-card{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
 .modal-card h3{font-size:14px;font-weight:800;margin-bottom:12px;text-align:center}
 .foto-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px}
 .foto-preview{width:82px;height:82px;border-radius:50%;object-fit:cover;background:#f3f4f6;border:2px solid #e5e7eb}
 .btn-foto{border:1px dashed #e5e7eb;background:#fafafa;border-radius:999px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer}
 .modal-card input,.modal-card select{width:100%;padding:10px 12px;border-radius:999px;border:1px solid #e5e7eb;margin-bottom:8px;font-size:12px;outline:none}
+.grid2{display:flex;gap:8px}.grid2>div{flex:1}
+.label{font-size:9px;font-weight:800;color:#6b7280;margin:4px 0 2px 6px;text-transform:uppercase}
 .modal-actions{display:flex;gap:8px;margin-top:8px}
-.btn-save{flex:1;background:#E10600;color:#fff;border-radius:999px;padding:10px;border:none;font-weight:800;cursor:pointer;font-size:11px}
-.btn-cancel{flex:1;background:#f3f4f6;border-radius:999px;padding:10px;border:none;font-weight:700;cursor:pointer;font-size:11px}
-
-/* RANKING */
-.rank-container{padding:10px}
+.btn-save{flex:1;background:#E10600;color:#fff;border-radius:999px;padding:10px;border:none;font-weight:800;cursor:pointer}
+.btn-cancel{flex:1;background:#f3f4f6;border-radius:999px;padding:10px;border:none;font-weight:700;cursor:pointer}
 .podio{display:flex;gap:10px;justify-content:center;align-items:end;margin-bottom:16px;flex-wrap:wrap}
-.podio-card{background:#fff;border-radius:14px;padding:12px 10px;width:105px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #eee;position:relative}
+.podio-card{background:#fff;border-radius:14px;padding:12px 10px;width:105px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #eee}
 .podio-card.oro{order:2;border:2px solid #FFD700;box-shadow:0 0 14px rgba(255,215,0,.5);transform:scale(1.08)}
 .podio-card.plata{order:1;border:2px solid #C0C0C0}.podio-card.bronce{order:3;border:2px solid #CD7F32}
-.medalla{font-size:22px;margin-bottom:4px;display:block}
-.podio-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto 6px;border:2px solid #eee}
-.podio-name{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.podio-ped{font-size:10px;color:#6b7280;margin-top:2px}
-.rank-list.rank-row{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f3f4f6}
-.rank-num{width:26px;height:26px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 </style>
 </head>
 <body>
-<div class="top">
-<div class="left">
-<button class="btn-x" onclick="location.href='admin.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-<div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div>
-</div>
-</div>
-
+<div class="top"><div class="left"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div></div>
 <div class="main">
-<div class="title-sec">
-<div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M5 17.5h-1a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h6l4-4h4a1 1 0 0 1 1 1v3"/></svg></div>
-<div><h1>Repartidores</h1><p>Gestiona tu equipo y ranking por pedidos reales</p></div>
-</div>
-
 <div class="tabs">
-<div class="tab active" id="tabList" onclick="cambiarTab('list')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Listado</div>
-<div class="tab" id="tabAdd" onclick="abrirModalNuevo()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Agregar</div>
-<div class="tab" id="tabRank" onclick="cambiarTab('rank')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2H6v9a6 6 0 0 0 12 0V2z"/><path d="M4 22h16"/></svg> Ranking</div>
+<div class="tab active" id="tabList" onclick="cambiarTab('list')">Listado</div>
+<div class="tab" id="tabAdd" onclick="abrirModalNuevo()">Agregar</div>
+<div class="tab" id="tabRank" onclick="cambiarTab('rank')">Ranking</div>
 </div>
-
-<div class="search-sec" id="searchSec">
-<div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="m21 21-4.3-4.3"/></svg><input id="buscar" placeholder="Buscar por nombre, teléfono..."></div>
-<div class="filtro"><select id="filtroEstado"><option value="todos">Todos</option><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option><option value="En descanso">En descanso</option></select></div>
-</div>
-
+<div class="search-sec" id="searchSec"><div class="search-box"><input id="buscar" placeholder="Buscar repartidor..."></div><div class="filtro"><select id="filtroEstado"><option value="todos">Todos</option><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select></div></div>
 <div class="aviso-slide">Desliza para ver más</div>
-<div class="table-wrap" id="wrapTabla">
-<table class="table" id="tablaList">
-<thead><tr><th>#</th><th>Nombre</th><th>Teléfono</th><th>Moto</th><th>Estado</th><th>Servicios</th><th>Acciones</th></tr></thead>
-<tbody id="tbody"></tbody>
-</table>
-
-<div id="rankingView" style="display:none">
-<div class="rank-container">
-<div class="podio" id="podio"></div>
-<div class="rank-list" id="rankList"></div>
+<div class="table-wrap">
+<table class="table" id="tablaList"><thead><tr><th>#</th><th>Nombre</th><th>Teléfono</th><th>Moto</th><th>Estado</th><th>Precio Mandado</th><th>Precio Transporte</th><th>Servicios</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table>
+<div id="rankingView" style="display:none"><div style="padding:10px"><div class="podio" id="podio"></div><div id="rankList"></div></div></div>
+<div class="footer-table" id="footerInfo"></div>
 </div>
 </div>
 
-<div class="footer-table" id="footerInfo">Mostrando 0 repartidores</div>
-</div>
-</div>
-
-<!-- MODAL EDICION -->
-<div id="modalBg" class="modal-bg">
-<div class="modal-card">
+<div id="modalBg" class="modal-bg"><div class="modal-card">
 <h3 id="modalTitle">Editar repartidor</h3>
-<div class="foto-wrap">
-<img id="fotoPreview" class="foto-preview" src="https://i.pravatar.cc/100">
-<input type="file" id="fotoInput" accept="image/*" style="display:none">
-<button class="btn-foto" onclick="document.getElementById('fotoInput').click()">Subir foto desde galería</button>
-</div>
-<input id="mNombre" placeholder="Nombre completo">
-<input id="mTelefono" placeholder="Teléfono">
-<input id="mMoto" placeholder="Moto - Ej: Honda 150">
-<input id="mDomicilio" placeholder="Dirección domicilio">
-<select id="mEstado">
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
-<option value="En descanso">En descanso</option>
-</select>
-<input id="mServicios" type="number" placeholder="Servicios" disabled style="background:#f9fafb;color:#6b7280">
-<small style="font-size:9px;color:#9ca3af;display:block;margin:-4px 0 8px 6px">* Los servicios se cuentan automático desde pedidos</small>
-<div class="modal-actions">
-<button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-<button class="btn-save" onclick="guardarModal()">Guardar</button>
-</div>
-</div>
-</div>
+<div class="foto-wrap"><img id="fotoPreview" class="foto-preview" src="https://i.pravatar.cc/100"><input type="file" id="fotoInput" accept="image/*" style="display:none"><button class="btn-foto" onclick="document.getElementById('fotoInput').click()">Subir foto desde galería</button></div>
+<div class="label">Datos personales</div>
+<input id="mNombre" placeholder="Nombre completo"><input id="mTelefono" placeholder="Teléfono"><input id="mMoto" placeholder="Moto"><input id="mDomicilio" placeholder="Domicilio">
+<select id="mEstado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option><option value="En descanso">En descanso</option></select>
+<div class="label">Precios de servicios (lo que se cobra en historial)</div>
+<div class="grid2"><div><input id="mPrecioMandado" type="number" placeholder="Moto Mandado - Ej 40"><small style="font-size:9px;color:#9ca3af">Precio Mandado</small></div><div><input id="mPrecioTrans" type="number" placeholder="Transporte - Ej 60"><small style="font-size:9px;color:#9ca3af">Precio Transporte</small></div></div>
+<input id="mServicios" type="number" disabled style="background:#f9fafb">
+<div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarModal()">Guardar</button></div>
+</div></div>
 
-<!-- MODAL ELIMINAR -->
-<div id="modalDelBg" class="modal-bg">
-<div class="modal-card" style="text-align:center">
-<div style="width:48px;height:48px;background:rgba(255,0,51,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border:1px solid #ff0033"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff0033" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1V6"/></svg></div>
-<h3>¿Eliminar repartidor?</h3>
-<p style="font-size:11px;color:#6b7280;margin-bottom:14px">Esta acción no se puede deshacer</p>
-<div class="modal-actions">
-<button class="btn-cancel" onclick="cerrarDel()">No</button>
-<button class="btn-save" id="btnConfirmDel" onclick="confirmarEliminar()">Sí, eliminar</button>
-</div>
-</div>
-</div>
+<div id="modalDelBg" class="modal-bg"><div class="modal-card" style="text-align:center"><h3>¿Eliminar repartidor?</h3><p style="font-size:11px;color:#6b7280;margin:8px 0 14px">Esta acción no se puede deshacer</p><div class="modal-actions"><button class="btn-cancel" onclick="cerrarDel()">No</button><button class="btn-save" onclick="confirmarEliminar()">Sí, eliminar</button></div></div></div>
 
 <script>
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-let repartidores=[], ventas=[], editId=null, deleteId=null, fotoBase64=null, tabActual='list', conteoPorRepartidor={};
-
-db.ref('repartidores').on('value', snap=>{
- const v=snap.val()||{};
- repartidores=Object.entries(v).map(([id,d])=>({id,...d}));
- render();
-});
-db.ref('ventas').on('value', snap=>{
- const v=snap.val()||{};
- ventas=Object.values(v);
- conteoPorRepartidor={};
- ventas.forEach(p=>{
-   const rep=(p.repartidor||'').trim();
-   if(!rep) return;
-   conteoPorRepartidor[rep.toLowerCase()]=(conteoPorRepartidor[rep.toLowerCase()]||0)+1;
- });
- render();
-});
-
-function getServiciosReales(r){
- const nombre=(r.nombre||'').toLowerCase().trim();
- return conteoPorRepartidor[nombre]||0;
-}
-
-function cambiarTab(t){
- tabActual=t;
- document.getElementById('tabList').classList.toggle('active', t==='list');
- document.getElementById('tabRank').classList.toggle('active', t==='rank');
- document.getElementById('tabAdd').classList.toggle('active', false);
- document.getElementById('tablaList').style.display = t==='list'?'table':'none';
- document.getElementById('rankingView').style.display = t==='rank'?'block':'none';
- document.getElementById('searchSec').style.display = t==='list'?'flex':'none';
- render();
-}
-
+firebase.initializeApp(firebaseConfig); const db=firebase.database();
+let repartidores=[], ventas=[], editId=null, deleteId=null, fotoBase64=null, tabActual='list', conteo={};
+db.ref('repartidores').on('value',s=>{repartidores=Object.entries(s.val()||{}).map(([id,d])=>({id,...d}));render();});
+db.ref('ventas').on('value',s=>{ventas=Object.values(s.val()||{});conteo={};ventas.forEach(p=>{const r=(p.repartidor||'').toLowerCase().trim();if(r)conteo[r]=(conteo[r]||0)+1});render();});
+function getServicios(r){return conteo[(r.nombre||'').toLowerCase().trim()]||0;}
+function cambiarTab(t){tabActual=t;document.getElementById('tabList').classList.toggle('active',t==='list');document.getElementById('tabRank').classList.toggle('active',t==='rank');document.getElementById('tablaList').style.display=t==='list'?'table':'none';document.getElementById('rankingView').style.display=t==='rank'?'block':'none';render();}
 function render(){
- const q=document.getElementById('buscar').value.toLowerCase().trim();
- const est=document.getElementById('filtroEstado').value;
- let lista=[...repartidores];
- lista=lista.map(r=>({...r, serviciosReales:getServiciosReales(r)}));
-
+ let lista=[...repartidores].map(r=>({...r,serviciosReales:getServicios(r)}));
+ const q=document.getElementById('buscar').value.toLowerCase().trim(); const est=document.getElementById('filtroEstado').value;
  if(tabActual==='list'){
-   lista=lista.filter(r=>{
-     if(est!=='todos' && (r.estado||'Activo')!==est) return false;
-     if(q &&!(`${r.nombre||''} ${r.telefono||''}`.toLowerCase().includes(q))) return false;
-     return true;
-   });
-   const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-   lista.forEach((r,i)=>{
-     const estado=r.estado||'Activo';
-     let clase='activo', dot='activo';
-     if(estado==='Inactivo'){clase='inactivo'; dot='inactivo';}
-     if(estado==='En descanso'){clase='descanso'; dot='descanso';}
-     const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;
-     const tr=document.createElement('tr');
-     tr.innerHTML=`
-       <td style="font-weight:800">${String(i+1).padStart(2,'0')}</td>
-       <td><div style="display:flex;align-items:center;gap:8px"><img class="avatar" src="${foto}"><span style="font-weight:700">${r.nombre||'-'}</span></div></td>
-       <td>${r.telefono||''}</td>
-       <td>${r.moto||''}</td>
-       <td><span class="badge-estado ${clase}"><span class="dot ${dot}"></span>${estado}</span></td>
-       <td style="font-weight:800">${r.serviciosReales} pedidos</td>
-       <td><div class="act"><button class="btn-act" onclick="abrirEditar('${r.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button><button class="btn-act btn-del" onclick="abrirEliminar('${r.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1V6"/></svg></button></div></td>`;
-     tbody.appendChild(tr);
-   });
-   document.getElementById('footerInfo').innerText=`Mostrando ${lista.length} de ${repartidores.length} repartidores`;
+  lista=lista.filter(r=>{if(est!=='todos'&&r.estado!==est)return false;if(q&&!`${r.nombre} ${r.telefono}`.toLowerCase().includes(q))return false;return true;});
+  const tbody=document.getElementById('tbody');tbody.innerHTML='';
+  lista.forEach((r,i)=>{
+   const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;
+   tbody.innerHTML+=`<tr><td>${String(i+1).padStart(2,'0')}</td><td><div style="display:flex;align-items:center;gap:8px"><img class="avatar" src="${foto}"><b>${r.nombre}</b></div></td><td>${r.telefono||''}</td><td>${r.moto||''}</td><td><span class="badge-estado ${r.estado==='Inactivo'?'inactivo':r.estado==='Activo'?'activo':'descanso'}">${r.estado}</span></td><td style="font-weight:800;color:#ff0033">$${r.precioMandado||40}</td><td style="font-weight:800;color:#111;background:#ffe600;border-radius:6px;padding:4px 8px;display:inline-block">$${r.precioTransporte||60}</td><td style="font-weight:800">${r.serviciosReales}</td><td><div style="display:flex;gap:6px"><button class="btn-act" onclick="abrirEditar('${r.id}')">✎</button><button class="btn-act btn-del" onclick="abrirEliminar('${r.id}')">🗑</button></div></td></tr>`;
+  });
+  document.getElementById('footerInfo').innerText=`${lista.length} repartidores`;
  }else{
-   // RANKING CON MEDALLAS
-   lista.sort((a,b)=>b.serviciosReales-a.serviciosReales);
-   const podio=document.getElementById('podio'); podio.innerHTML='';
-   const top3=lista.slice(0,3);
-   const orden=[1,0,2];
-   orden.forEach(idx=>{
-     const r=top3[idx]; if(!r) return;
-     let tipo='bronce', med='🥉', label='Bronce';
-     if(idx===0){tipo='oro'; med='🥇'; label='Oro';}
-     if(idx===1){tipo='plata'; med='🥈'; label='Plata';}
-     const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;
-     const div=document.createElement('div');
-     div.className=`podio-card ${tipo}`;
-     div.innerHTML=`<span class="medalla">${med}</span><img class="podio-avatar" src="${foto}"><div class="podio-name">${r.nombre}</div><div class="podio-ped">${r.serviciosReales} pedidos</div><div style="font-size:9px;font-weight:800;margin-top:2px;color:${tipo==='oro'?'#B8860B':tipo==='plata'?'#6b7280':'#8B4513'}">${label}</div>`;
-     podio.appendChild(div);
-   });
-   const rankList=document.getElementById('rankList'); rankList.innerHTML='';
-   lista.forEach((r,i)=>{
-     if(i<3) return;
-     const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;
-     const row=document.createElement('div'); row.className='rank-row';
-     row.innerHTML=`<div class="rank-num">${i+1}</div><img class="avatar" src="${foto}"><div style="flex:1"><div style="font-weight:700;font-size:12px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.serviciosReales} pedidos</div></div><span class="badge-estado ${r.estado==='Inactivo'?'inactivo':r.estado==='Activo'?'activo':'descanso'}">${r.estado||'Activo'}</span>`;
-     rankList.appendChild(row);
-   });
-   document.getElementById('footerInfo').innerText=`Ranking - ${lista.length} repartidores - Total pedidos: ${ventas.length}`;
+  lista.sort((a,b)=>b.serviciosReales-a.serviciosReales);
+  const podio=document.getElementById('podio');podio.innerHTML='';const top3=lista.slice(0,3);[1,0,2].forEach(idx=>{const r=top3[idx];if(!r)return;const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;let tipo=idx===0?'oro':idx===1?'plata':'bronce';let med=idx===0?'🥇':idx===1?'🥈':'🥉';podio.innerHTML+=`<div class="podio-card ${tipo}"><span style="font-size:22px">${med}</span><img class="foto-preview" style="width:56px;height:56px;margin:6px auto;display:block" src="${foto}"><div style="font-weight:800;font-size:11px">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.serviciosReales} pedidos</div></div>`;});
+  const rankList=document.getElementById('rankList');rankList.innerHTML='';lista.slice(3).forEach((r,i)=>{const foto=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;rankList.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f3f4f6"><div style="width:26px;height:26px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px">${i+4}</div><img class="avatar" src="${foto}"><div style="flex:1"><div style="font-weight:700">${r.nombre}</div><div style="font-size:10px;color:#6b7280">${r.serviciosReales} pedidos</div></div><span class="badge-estado ${r.estado==='Inactivo'?'inactivo':'activo'}">${r.estado}</span></div>`;});
  }
 }
-
-function abrirModalNuevo(){
- editId=null; fotoBase64=null;
- document.getElementById('modalTitle').innerText='Agregar repartidor';
- document.getElementById('mNombre').value=''; document.getElementById('mTelefono').value=''; document.getElementById('mMoto').value=''; document.getElementById('mDomicilio').value=''; document.getElementById('mEstado').value='Activo'; document.getElementById('mServicios').value='0';
- document.getElementById('fotoPreview').src='https://i.pravatar.cc/100?u=new';
- document.getElementById('modalBg').classList.add('open');
-}
-
-function abrirEditar(id){
- const r=repartidores.find(x=>x.id===id); if(!r) return;
- editId=id; fotoBase64=r.fotoBase64||null;
- document.getElementById('modalTitle').innerText='Editar repartidor';
- document.getElementById('mNombre').value=r.nombre||'';
- document.getElementById('mTelefono').value=r.telefono||'';
- document.getElementById('mMoto').value=r.moto||'';
- document.getElementById('mDomicilio').value=r.domicilio||r.direccion||'';
- document.getElementById('mEstado').value=r.estado||'Activo';
- document.getElementById('mServicios').value=getServiciosReales(r);
- document.getElementById('fotoPreview').src=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;
- document.getElementById('modalBg').classList.add('open');
-}
-
-function cerrarModal(){ document.getElementById('modalBg').classList.remove('open'); editId=null; fotoBase64=null; }
-
-document.getElementById('fotoInput').addEventListener('change', e=>{
- const file=e.target.files[0]; if(!file) return;
- const reader=new FileReader();
- reader.onload=ev=>{ fotoBase64=ev.target.result; document.getElementById('fotoPreview').src=fotoBase64; };
- reader.readAsDataURL(file);
-});
-
-function guardarModal(){
- const data={
-   nombre: document.getElementById('mNombre').value.trim(),
-   telefono: document.getElementById('mTelefono').value.trim(),
-   moto: document.getElementById('mMoto').value.trim(),
-   domicilio: document.getElementById('mDomicilio').value.trim(),
-   estado: document.getElementById('mEstado').value
- };
- if(!data.nombre) return alert('Nombre requerido');
- if(fotoBase64) data.fotoBase64=fotoBase64;
- // Actualiza automático y se refleja al instante
- if(editId){
-   db.ref('repartidores/'+editId).update(data).then(()=>{ cerrarModal(); render(); });
- }else{
-   db.ref('repartidores').push(data).then(()=>{ cerrarModal(); cambiarTab('list'); });
- }
-}
-
-// ELIMINAR MODAL
-function abrirEliminar(id){ deleteId=id; document.getElementById('modalDelBg').classList.add('open'); }
-function cerrarDel(){ document.getElementById('modalDelBg').classList.remove('open'); deleteId=null; }
-function confirmarEliminar(){ if(!deleteId) return; db.ref('repartidores/'+deleteId).remove().then(()=>cerrarDel()); }
-
-document.getElementById('buscar').addEventListener('input', render);
-document.getElementById('filtroEstado').addEventListener('change', render);
-document.getElementById('modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg') cerrarModal(); });
-document.getElementById('modalDelBg').addEventListener('click', e=>{ if(e.target.id==='modalDelBg') cerrarDel(); });
+function abrirModalNuevo(){editId=null;fotoBase64=null;document.getElementById('modalTitle').innerText='Agregar repartidor';['mNombre','mTelefono','mMoto','mDomicilio','mPrecioMandado','mPrecioTrans'].forEach(id=>document.getElementById(id).value='');document.getElementById('mPrecioMandado').value=40;document.getElementById('mPrecioTrans').value=60;document.getElementById('fotoPreview').src='https://i.pravatar.cc/100?u=new';document.getElementById('modalBg').classList.add('open');}
+function abrirEditar(id){const r=repartidores.find(x=>x.id===id);if(!r)return;editId=id;fotoBase64=r.fotoBase64||null;document.getElementById('modalTitle').innerText='Editar repartidor';document.getElementById('mNombre').value=r.nombre||'';document.getElementById('mTelefono').value=r.telefono||'';document.getElementById('mMoto').value=r.moto||'';document.getElementById('mDomicilio').value=r.domicilio||'';document.getElementById('mEstado').value=r.estado||'Activo';document.getElementById('mPrecioMandado').value=r.precioMandado||40;document.getElementById('mPrecioTrans').value=r.precioTransporte||60;document.getElementById('mServicios').value=getServicios(r);document.getElementById('fotoPreview').src=r.fotoBase64||r.foto||`https://i.pravatar.cc/100?u=${r.id}`;document.getElementById('modalBg').classList.add('open');}
+function cerrarModal(){document.getElementById('modalBg').classList.remove('open');editId=null;fotoBase64=null;}
+document.getElementById('fotoInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{fotoBase64=ev.target.result;document.getElementById('fotoPreview').src=fotoBase64;};rd.readAsDataURL(f);});
+function guardarModal(){const data={nombre:document.getElementById('mNombre').value.trim(),telefono:document.getElementById('mTelefono').value.trim(),moto:document.getElementById('mMoto').value.trim(),domicilio:document.getElementById('mDomicilio').value.trim(),estado:document.getElementById('mEstado').value,precioMandado:parseInt(document.getElementById('mPrecioMandado').value)||40,precioTransporte:parseInt(document.getElementById('mPrecioTrans').value)||60};if(!data.nombre)return alert('Nombre requerido');if(fotoBase64)data.fotoBase64=fotoBase64;if(editId){db.ref('repartidores/'+editId).update(data).then(()=>cerrarModal());}else{db.ref('repartidores').push(data).then(()=>cerrarModal());}}
+function abrirEliminar(id){deleteId=id;document.getElementById('modalDelBg').classList.add('open');}
+function cerrarDel(){document.getElementById('modalDelBg').classList.remove('open');deleteId=null;}
+function confirmarEliminar(){if(!deleteId)return;db.ref('repartidores/'+deleteId).remove().then(()=>cerrarDel());}
+document.getElementById('buscar').addEventListener('input',render);document.getElementById('filtroEstado').addEventListener('change',render);
 </script>
 </body>
- </html>
+</html>
