@@ -98,3 +98,69 @@
 <div class="total-box"><span class="total-title">Total</span><span id="totalTxt" style="font-size:28px;font-weight:900;color:#e11d2a">$ 0.00</span></div>
 <button class="btn-reg" onclick="registrarVenta()">✓ Registrar Venta</button>
 </div>
+<div id="vHistorial" style="display:none">
+<div style="font-weight:900;font-size:22px;margin-top:10px">Historial</div>
+<input id="buscarCliente" placeholder="Buscar cliente" class="inp" style="margin-top:10px" oninput="aplicarFiltros()">
+<select id="filtroRepartidor" class="inp" style="margin-top:8px" onchange="aplicarFiltros()"><option value="">Todos los repartidores</option></select>
+<input id="filtroFechaExacta" type="date" class="inp" style="margin-top:8px" onchange="aplicarFiltros()">
+<div id="tbodyVentas" style="margin-top:12px"></div>
+</div>
+
+<div id="vClientes" style="display:none">
+<div style="font-weight:900;font-size:22px;margin-top:10px">Clientes</div>
+<div id="listaClientesImagen" style="margin-top:10px"></div>
+</div>
+
+<div id="vPresupuesto" style="display:none">
+<div style="font-weight:900;font-size:22px;margin-top:10px">Presupuesto</div>
+<div style="margin-top:8px">Pagado <b id="presuIngTot">$0</b> | Deben <b id="presuPorCobrar">$0</b> | Balance <b id="presuBalance">$0</b></div>
+<select id="presuRepSelect" class="inp" style="margin-top:8px" onchange="renderPresu()"><option value="TODOS">Todos</option></select>
+<input id="presuFecha" type="date" class="inp" style="margin-top:8px" onchange="renderPresu()">
+<div id="tbodyPresu" style="margin-top:10px"></div>
+</div>
+
+<div id="vRepartidores" style="display:none">
+<div style="font-weight:900;font-size:22px;margin-top:10px">Repartidores</div>
+<input id="buscarRep" class="inp" style="margin-top:8px" placeholder="Buscar" oninput="renderReps()">
+<div id="listaRepsImagen" style="margin-top:10px"></div>
+</div>
+</div>
+
+<div id="overlayExito" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:999">
+<div style="background:#fff;border-radius:20px;padding:24px;text-align:center"><b>¡Registro Exitoso!</b></div>
+</div>
+
+<script>
+const firebaseConfig = { 
+apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", 
+authDomain: "registro-ventas-kigo.firebaseapp.com", 
+databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", 
+projectId: "registro-ventas-kigo", 
+storageBucket: "registro-ventas-kigo.firebasestorage.app", 
+messagingSenderId: "494693818399", 
+appId: "1:494693818399:web:34312307ec5cd52190752a" 
+};
+firebase.initializeApp(firebaseConfig); 
+const db = firebase.database();
+
+// Protege admin - si no es admin lo saca al login
+(function(){ 
+if(localStorage.getItem('kigo_rol')!=='admin'){ 
+location.href='../index.html'; 
+} 
+})();
+
+function cerrarSesion(){ 
+localStorage.clear(); 
+location.href='../index.html'; 
+}
+
+function openM(){ 
+document.getElementById('menu').classList.add('open'); 
+document.getElementById('menuBg').classList.add('open'); 
+}
+
+function closeM(){ 
+document.getElementById('menu').classList.remove('open'); 
+document.getElementById('menuBg').classList.remove('open'); 
+}
