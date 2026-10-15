@@ -272,3 +272,68 @@ td{padding:10px 12px;font-size:13px;border-top:1px solid #f0f0f0;vertical-align:
 <div id="presuCalGrid" class="cal-grid"></div>
 <div style="background:#fff;border-radius:10px;padding:10px;margin-top:10px;font-size:11px"><b>¿Qué ves aquí?</b> Cada cuadro es un día. Arriba pedidos, abajo ingresos Kigo. Desliza meses con ‹ › para ver todo el año. Verde = día con ventas.</div>
 </div>
+</div>
+
+<div id="vistaRepartidores" class="card" style="display:none;background:#eef1ed;box-shadow:none;border-radius:20px">
+<div class="portal-title"><div class="portal-icon"><i data-lucide="bike" style="width:18px;color:#2d5a2e"></i></div> Portal Repartidores</div>
+<div class="rep-tabs">
+<button id="rTabListado" class="rep-tab active" onclick="switchReps('listado')">Listado de Repartidores</button>
+<button id="rTabNuevo" class="rep-tab" onclick="switchReps('nuevo')">Agregar Nuevo</button>
+<button id="rTabRanking" class="rep-tab" onclick="switchReps('ranking')">Ranking</button>
+</div>
+<div id="repsListado">
+<div class="rep-stats">
+<div class="rep-stat"><div class="rep-stat-icon"><i data-lucide="users" style="width:18px"></i></div><div><div class="rep-stat-label">Total Repartidores</div><div class="rep-stat-num" id="repStatTotal">0</div></div></div>
+<div class="rep-stat"><div class="rep-stat-icon"><i data-lucide="user-check" style="width:18px"></i></div><div><div class="rep-stat-label">Activos Hoy</div><div class="rep-stat-num" id="repStatActivos">0</div></div></div>
+<div class="rep-stat"><div class="rep-stat-icon"><i data-lucide="package" style="width:18px"></i></div><div><div class="rep-stat-label">Entregas mes</div><div class="rep-stat-num" id="repStatEntregas">0</div></div></div>
+</div>
+<div class="rep-list-header"><div style="font-weight:800;font-size:16px;color:#2d3a2e">Repartidores</div><div class="rep-search"><i data-lucide="search" style="width:14px;color:#888"></i><input id="buscarRep" placeholder="Buscar..." style="border:none;outline:none;font-size:12px;width:100%;background:transparent" oninput="renderReps()"></div></div>
+<div id="listaRepsImagen"></div>
+</div>
+<div id="repsNuevo" style="display:none"><div class="card" style="margin:0;background:#fff"><div style="font-weight:900;font-size:16px;margin-bottom:10px">Agregar Nuevo Repartidor</div>
+<div class="label">Foto Repartidor</div><input id="nuevoRepFoto" type="file" accept="image/*" capture="environment" class="input" style="padding:8px" onchange="previewFoto(this,'nuevoPreview')"><img id="nuevoPreview" class="foto-preview">
+<div class="label">Nombre</div><input id="nuevoRepNombre" class="input" placeholder="Ej: Carlos Mendoza"><div class="label">Teléfono</div><input id="nuevoRepTel" class="input" placeholder="+52 55 1234 5678"><div class="label">Moto</div><input id="nuevoRepMoto" class="input" placeholder="Ej: Honda CB125"><button class="btn-reg" onclick="agregarRepNuevo()"><i data-lucide="plus" style="width:16px"></i> Guardar Repartidor</button></div></div>
+<div id="repsRanking" style="display:none"><div class="card" style="margin:0;background:#fff"><div style="font-weight:900;font-size:14px;margin-bottom:10px">Ranking Repartidores</div><div id="rankingReps"></div></div></div>
+</div>
+
+</div>
+<div class="nav">
+<button id="navRegistro" class="nav-item active" onclick="showTab('Registro')"><i data-lucide="clipboard-edit" style="width:20px"></i> Registro</button>
+<button id="navHistorial" class="nav-item" onclick="showTab('Historial')"><i data-lucide="clock" style="width:20px"></i> Historial</button>
+<button id="navClientes" class="nav-item" onclick="showTab('Clientes')"><i data-lucide="users" style="width:20px"></i> Clientes</button>
+<button id="navPresupuesto" class="nav-item" onclick="showTab('Presupuesto')"><i data-lucide="wallet" style="width:20px"></i> Presupuesto</button>
+<button id="navRepartidores" class="nav-item" onclick="showTab('Repartidores')"><i data-lucide="user-cog" style="width:20px"></i> Repartidores</button>
+</div>
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig); const db = firebase.database();
+let tipoActual='moto';
+function clearInput(id){ const el=document.getElementById(id); el.value=''; if(el.tagName==='SELECT') el.selectedIndex=0; calcTotal(); if(id==='cliente') ocultarSugerencias(); }
+function resetFechaHoy(){ document.getElementById('fechaVenta').value=new Date().toISOString().split('T')[0]; }
+function setTipo(t){ tipoActual=t; document.getElementById('btnMoto').className=t==='moto'?'tipo active':'tipo'; document.getElementById('btnTrans').className=t==='transporte'?'tipo active':'tipo'; lucide.createIcons(); }
+function calcTotal(){ let p=parseFloat(document.getElementById('precio').value)||0; let d=parseFloat(document.getElementById('descuento').value)||0; let tot=p-d; if(tot<0) tot=0; document.getElementById('totalTxt').innerText='$ '+tot.toFixed(2); return tot; }
+function showTab(n){ document.getElementById('vistaRegistro').style.display=n==='Registro'?'block':'none'; document.getElementById('vistaHistorial').style.display=n==='Historial'?'block':'none'; document.getElementById('vistaClientes').style.display=n==='Clientes'?'block':'none'; document.getElementById('vistaPresupuesto').style.display=n==='Presupuesto'?'block':'none'; document.getElementById('vistaRepartidores').style.display=n==='Repartidores'?'block':'none'; document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('nav'+n).classList.add('active'); window.scrollTo(0,0); if(n==='Clientes') renderClientesImagen(); if(n==='Repartidores') renderReps(); if(n==='Presupuesto') renderPresupuesto(); if(n==='Historial') aplicarFiltros(); }
+(function(){ resetFechaHoy(); document.getElementById('fechaTop').innerText=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' - '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true}); })();
+const mesesN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let mesSel=5; let anioSel=2026;
+function renderMeses(){ document.getElementById('mesesBox').innerHTML=mesesN.map((m,i)=>`<button class="mes ${i===mesSel?'active':''}" onclick="selMes(${i})">${m}</button>`).join(''); document.getElementById('filtroMesAnio').innerHTML=`<option value="">Todos</option>`+mesesN.map(m=>`<option>${m} 2026</option>`).join(''); const t=document.getElementById('presuMesActual'); if(t) t.innerText=mesesN[mesSel]+' '+anioSel; }
+function selMes(i){ mesSel=i; filtroTiempo='mes'; pagina=1; document.getElementById('bloqueMeses').style.display='block'; document.querySelectorAll('.filtro-tab').forEach(b=>b.classList.remove('active')); document.getElementById('fBusMes').classList.add('active'); document.getElementById('fMes').classList.add('active'); document.getElementById('mesTitulo').innerText=mesesN[mesSel]+' 2026'; renderMeses(); aplicarFiltros(); renderClientesImagen(); renderReps(); renderPresupuesto(); }
+renderMeses();
+function toggleMeses(){ const b=document.getElementById('bloqueMeses'); const isHidden=b.style.display==='none'; b.style.display=isHidden?'block':'none'; if(isHidden){ filtroTiempo='mes'; } else { filtroTiempo='todos'; document.getElementById('mesTitulo').innerText='Todos - '+ventasCache.length+' servicios'; } pagina=1; aplicarFiltros(); }
+let filtroTiempo='todos';
+function filtrarTiempo(t){ filtroTiempo=t; document.querySelectorAll('.filtro-tab').forEach(b=>b.classList.remove('active')); document.getElementById(t==='todos'?'fTodos':t==='ayer'?'fAyer':t==='semana'?'fSemana':t==='mes'?'fMes':'fBusMes').classList.add('active'); if(t==='todos'){ document.getElementById('bloqueMeses').style.display='none'; document.getElementById('mesTitulo').innerText='Todos - '+ventasCache.length+' servicios'; } pagina=1; aplicarFiltros(); }
+function cambiarMesPresu(dir){ mesSel+=dir; if(mesSel>11){ mesSel=0; anioSel++; } if(mesSel<0){ mesSel=11; anioSel--; } renderMeses(); renderPresupuesto(); }
+</script>
+<script>
+let ventasCache=[], ventasFiltradas=[]; let pagina=1; const POR_PAGINA=600; let idEditar=null, idEliminar=null;
+let clientesDB={}, clienteEditId=null, clienteDelId=null, clienteDelNombre=null;
+let repartidoresDB={}, repEditId=null, repDelId=null; let fotoTempNuevo='', fotoTempEdit=''; let presuTipo='dia';
+db.ref('clientes').on('value',s=>{ clientesDB=s.val()||{}; renderClientesImagen(); });
+db.ref('repartidores').on('value',s=>{ repartidoresDB=s.val()||{}; renderReps(); refreshRepsSelect(); renderPresupuesto(); refreshPresuSelect(); });
+db.ref('ventas').on('value',snap=>{
+ const val=snap.val()||{}; ventasCache=Object.entries(val).map(([id,v])=>({id,...v, pagaKigoBase:v.pagaKigoBase??v.pagaKigo??v.tarifaAplicada??5})).sort((a,b)=>b.timestamp-a.timestamp);
+ const repsUnicos=[...new Set(ventasCache.map(v=>v.repartidor).filter(Boolean))];
+ document.getElementById('filtroRepartidor').innerHTML='<option value="">Filtrar por Repartidor</option>'+repsUnicos.map(r=>`<option value="${r}">${r}</option>`).join('');
+ if(filtroTiempo==='todos'){ document.getElementById('mesTitulo').innerText='Todos - '+ventasCache.length+' servicios'; document.getElementById('fTodos').innerText='Todos ('+ventasCache.length+')'; }
+ aplicarFiltros(); renderClientesImagen(); renderReps(); renderPresupuesto(); refreshPresuSelect();
+});
