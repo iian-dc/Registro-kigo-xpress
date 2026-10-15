@@ -46,7 +46,7 @@ body{background:#f5f5f5;zoom:0.88}
 <body>
 <div class="top"><div style="display:flex;gap:10px;align-items:center"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div><div class="total-ped" id="totalPed">Total: 0</div></div>
 <div class="main">
-<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Valor = servicio | Pago = lo que te paga el repartidor</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
+<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Valor fijo | Pago congelado por pedido</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
 <div class="filters"><div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div><div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div><div class="search-box"><input id="fBuscar" placeholder="Buscar aliado..."></div><button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button></div>
 <div class="aviso-slide">← Desliza para ver más →</div>
 <div class="table-wrap" id="wrapTabla"><table class="table"><thead><tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table><div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div></div>
@@ -58,8 +58,9 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 let ventas=[], filtradas=[], pagina=1, porPag=30, editId=null, primeraCarga=true;
 let repartidoresMap={};
+const TARIFA_DEFAULT_MANDADO = 5;
+const TARIFA_DEFAULT_TRANSPORTE = 10;
 
-// LEER TARIFAS DE REPARTIDORES EN TIEMPO REAL
 db.ref('repartidores').on('value', snap=>{
   const v=snap.val()||{};
   repartidoresMap={};
@@ -70,22 +71,22 @@ db.ref('repartidores').on('value', snap=>{
   render();
 });
 
-function getCobroRepartidor(nombreRepa, tipo){
+function getTarifaActualRepartidor(nombreRepa, tipo){
   const key=(nombreRepa||'').toLowerCase().trim();
   const rep=repartidoresMap[key];
   const esTrans=(tipo||'').toLowerCase().includes('trans');
   if(rep){
     if(esTrans){
-      if(rep.tarifaTransporte!=null) return parseInt(rep.tarifaTransporte);
+      if(rep.tarifaTransporte!=null && rep.tarifaTransporte!=='') return parseInt(rep.tarifaTransporte);
       if(rep.precioTransporte!=null) return parseInt(rep.precioTransporte);
-      if(rep.cobroTransporte!=null) return parseInt(rep.cobroTransporte);
+      return TARIFA_DEFAULT_TRANSPORTE;
     }else{
-      if(rep.tarifaMandado!=null) return parseInt(rep.tarifaMandado);
+      if(rep.tarifaMandado!=null && rep.tarifaMandado!=='') return parseInt(rep.tarifaMandado);
       if(rep.precioMandado!=null) return parseInt(rep.precioMandado);
-      if(rep.cobroMandado!=null) return parseInt(rep.cobroMandado);
+      return TARIFA_DEFAULT_MANDADO;
     }
   }
-  return esTrans?10:5;
+  return esTrans?TARIFA_DEFAULT_TRANSPORTE:TARIFA_DEFAULT_MANDADO;
 }
 
 db.ref('ventas').on('value', snap=>{
@@ -94,6 +95,23 @@ db.ref('ventas').on('value', snap=>{
  const scrollY = window.scrollY;
  const prevPag = pagina;
  let lista=Object.entries(v).map(([id,d])=>({id,...d}));
+ 
+ // CONGELAR TARIFA EN PEDIDOS VIEJOS
+ lista.forEach(item=>{
+   if(item.tarifaCongelada==null){
+     // Si ya estaba pagado, congelar con lo que ya tiene guardado
+     if(item.pago>0) item.tarifaCongelada = parseInt(item.pago);
+     else if(item.descuento>0) item.tarifaCongelada = parseInt(item.descuento);
+     else {
+       // Si es Debe viejo sin tarifa, congelar con 5 y 10
+       const esTrans=(item.tipo||'').toLowerCase().includes('trans');
+       item.tarifaCongelada = esTrans?TARIFA_DEFAULT_TRANSPORTE:TARIFA_DEFAULT_MANDADO;
+     }
+     // Guardar en Firebase para que no vuelva a cambiar
+     db.ref('ventas/'+item.id).update({tarifaCongelada: item.tarifaCongelada});
+   }
+ });
+
  lista.sort((a,b)=>{
    const fa=a.fecha||''; const fb=b.fecha||'';
    if(fa!==fb) return fa.localeCompare(fb);
@@ -101,6 +119,16 @@ db.ref('ventas').on('value', snap=>{
  });
  lista.forEach((item, idx)=>{ item.numeroSecuencial = idx+1; });
  ventas = [...lista].reverse();
+ 
+ // Para pedidos NUEVOS que llegan sin tarifaCongelada, asignar tarifa ACTUAL del repartidor
+ ventas.forEach(item=>{
+   if(item.tarifaCongelada==null){
+     const tarifaActual = getTarifaActualRepartidor(item.repartidor, item.tipo);
+     db.ref('ventas/'+item.id).update({tarifaCongelada: tarifaActual});
+     item.tarifaCongelada = tarifaActual;
+   }
+ });
+
  if(primeraCarga){
    filtradas=[...ventas];
    primeraCarga=false;
@@ -133,13 +161,13 @@ function formatFecha(f){ if(!f) return ''; if(f.includes('-')){const [y,m,d]=f.s
 function togglePago(id){
  const v=ventas.find(x=>x.id===id); if(!v) return;
  const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
- const cobro=getCobroRepartidor(v.repartidor, v.tipo);
+ const cobro = v.tarifaCongelada!=null ? v.tarifaCongelada : getTarifaActualRepartidor(v.repartidor, v.tipo);
  const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
  const scrollY = window.scrollY;
  if(isSi){
-   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', descuento:0, total:0, pago:0}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
+   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', total:0}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }else{
-   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:cobro, total:cobro, pago:cobro}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
+   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', pago:cobro, descuento:cobro, total:cobro, tarifaCongelada:cobro}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }
 }
 
@@ -153,18 +181,26 @@ function render(){
   const esTrans=(v.tipo||'').toLowerCase().includes('trans');
   const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
   const valorServicio=parseFloat(v.precio||v.valor||0);
-  const cobroRepa=getCobroRepartidor(v.repartidor, v.tipo);
-  const pagoMostrar=cobroRepa;
-  const totalMostrar=isSi?cobroRepa:0;
+  const cobro = v.tarifaCongelada!=null ? v.tarifaCongelada : getTarifaActualRepartidor(v.repartidor, v.tipo);
+  const totalMostrar=isSi?cobro:0;
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valorServicio.toFixed(0)}</td><td style="font-weight:800;color:#E10600">$${pagoMostrar.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
+  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valorServicio.toFixed(0)}</td><td style="font-weight:800;color:#E10600">$${cobro.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
   tbody.appendChild(tr);
  });
 }
 function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtradas.length/porPag)); pagina=Math.min(max,Math.max(1,pagina+d)); render(); window.scrollTo(0,0); }
 function editar(id){ const v=ventas.find(x=>x.id===id); if(!v) return; editId=id; eCliente.value=v.cliente||''; eTipo.value=(v.tipo||'').includes('trans')?'transporte':'moto'; eRepa.value=v.repartidor||''; eValor.value=v.precio||0; ePagado.value=(v.yaPago===true||v.estado==='Pagado')?'si':'no'; modalEdit.classList.add('open'); }
 function cerrarModal(){modalEdit.classList.remove('open'); editId=null;}
-function guardarEdicion(){ if(!editId) return; const isSi=ePagado.value==='si'; const tipo=eTipo.value; const cobro=getCobroRepartidor(eRepa.value, tipo); const valor=parseFloat(eValor.value||0); const pago=isSi?cobro:0; const tot=isSi?cobro:0; db.ref('ventas/'+editId).update({cliente:eCliente.value,tipo:tipo,repartidor:eRepa.value,precio:valor,descuento:pago,total:tot,pago:pago,yaPago:isSi,estado:isSi?'Pagado':'Debe'}).then(()=>cerrarModal()); }
+function guardarEdicion(){
+ if(!editId) return;
+ const isSi=ePagado.value==='si';
+ const tipo=eTipo.value;
+ const vOld=ventas.find(x=>x.id===editId);
+ const cobro = vOld.tarifaCongelada!=null ? vOld.tarifaCongelada : getTarifaActualRepartidor(eRepa.value, tipo);
+ const valor=parseFloat(eValor.value||0);
+ const tot=isSi?cobro:0;
+ db.ref('ventas/'+editId).update({cliente:eCliente.value,tipo:tipo,repartidor:eRepa.value,precio:valor,total:tot,yaPago:isSi,estado:isSi?'Pagado':'Debe',tarifaCongelada:cobro}).then(()=>cerrarModal());
+}
 function eliminar(id){ if(confirm('¿Eliminar?')) db.ref('ventas/'+id).remove(); }
 fBuscar.addEventListener('keyup',e=>{if(e.key==='Enter') aplicarFiltros();});
 </script>
