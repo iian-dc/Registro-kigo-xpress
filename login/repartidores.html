@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repartidores - Kigo Xpress</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
+body{background:#f5f5f5;zoom:0.92}
+.top{height:56px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:sticky;top:0;z-index:50}
+.left{display:flex;align-items:center;gap:10px}
+.btn-x{width:32px;height:32px;background:#E10600;border:none;color:#fff;border-radius:8px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{color:#fff;font-weight:800;font-size:14px}.red{color:#E10600}.logo-sub{color:#a3a3a3;font-size:8px;letter-spacing:1px;margin-top:-2px}
+.main{padding:12px}
+.title-sec{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.title-sec h1{font-size:18px;font-weight:800}.title-sec p{font-size:11px;color:#6b7280}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tab{flex:1;min-width:140px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;justify-content:center;font-weight:700;font-size:12px;cursor:pointer}
+.tab.active{border-bottom:3px solid #E10600}
+.tab-icon{width:22px;height:22px;background:#111;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px}
+.search-sec{background:#fff;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;height:38px;background:#fff}
+.search-box input{border:none;outline:none;width:100%;font-size:12px}
+.filtro{border:1px solid #e5e7eb;border-radius:10px;padding:0 10px;height:38px;background:#fff;display:flex;align-items:center;gap:6px;font-size:12px}
+.filtro select{border:none;outline:none;background:transparent;font-size:12px}
+.table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto}
+.table{width:100%;border-collapse:collapse;min-width:860px}
+.table th{background:#111;color:#fff;padding:12px 10px;font-size:11px;font-weight:700;text-align:left;white-space:nowrap}
+.table td{padding:10px;font-size:11.5px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
+.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#eee}
+.badge-estado{border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.activo{background:#e8f5e9;color:#16a34a}.descanso{background:#f3f4f6;color:#6b7280}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.activo{background:#16a34a}.dot.descanso{background:#9ca3af}
+.act{display:flex;gap:6px}
+.btn-act{width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-del{background:#E10600;color:#fff;border-color:#E10600}
+.footer-table{padding:10px 12px;font-size:10px;color:#94a3b8;border-top:1px solid #eee}
+.aviso-slide{display:none;justify-content:center;font-size:10px;color:#E10600;font-weight:700;padding:6px 0}
+@media(max-width:768px){.tabs{flex-direction:column}.tab{width:100%}.aviso-slide{display:flex}.search-sec{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="top">
+<div class="left">
+<button class="btn-x" onclick="location.href='admin.html'">✕</button>
+<div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div>
+</div>
+</div>
+
+<div class="main">
+<div class="title-sec">
+<div style="font-size:28px">🏍️</div>
+<div><h1>Repartidores</h1><p>Gestiona tu equipo de repartidores y mantén el control de tus servicios.</p></div>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="location.href='repartidores.html'"><span class="tab-icon">👥</span> Listado de repartidores</div>
+<div class="tab" onclick="location.href='repartidores.html?add=1'"><span class="tab-icon">+</span> Agregar repartidor</div>
+<div class="tab" onclick="location.href='ranking.html'"><span class="tab-icon">🏆</span> Ranking de repartidores</div>
+</div>
+
+<div class="search-sec">
+<div class="search-box"><span>🔍</span><input id="buscar" placeholder="Buscar repartidor por nombre, teléfono o ID..."></div>
+<div class="filtro"><span>📅</span><select id="filtroEstado"><option value="todos">Todos</option><option value="Activo">Activo</option><option value="En descanso">En descanso</option></select></div>
+</div>
+
+<div class="aviso-slide">← Desliza para ver más →</div>
+<div class="table-wrap" id="wrapTabla">
+<table class="table">
+<thead>
+<tr>
+<th>#</th>
+<th>Nombre</th>
+<th>Teléfono</th>
+<th>Moto</th>
+<th>Estado</th>
+<th>Servicios</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+<div class="footer-table" id="footerInfo">Mostrando 0 repartidores</div>
+</div>
+</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let repartidores=[];
+
+db.ref('repartidores').on('value', snap=>{
+ const v=snap.val()||{};
+ repartidores=Object.entries(v).map(([id,d])=>({id,...d}));
+ render();
+});
+
+function render(){
+ const tbody=document.getElementById('tbody');
+ const q=document.getElementById('buscar').value.toLowerCase().trim();
+ const est=document.getElementById('filtroEstado').value;
+ let lista=repartidores.filter(r=>{
+  if(est!=='todos' && r.estado!==est) return false;
+  if(q && !(`${r.nombre||''} ${r.telefono||''} ${r.id||''}`.toLowerCase().includes(q))) return false;
+  return true;
+ });
+ tbody.innerHTML='';
+ lista.forEach((r,i)=>{
+  const esActivo=(r.estado||'Activo')==='Activo';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+  <td style="font-weight:700">${String(i+1).padStart(2,'0')}</td>
+  <td><div style="display:flex;align-items:center;gap:8px"><img class="avatar" src="${r.foto||'https://i.pravatar.cc/100?img='+ (i+5)}"><span style="font-weight:700">${r.nombre||'-'}</span></div></td>
+  <td>${r.telefono||''}</td>
+  <td>${r.moto||'Honda 150'}</td>
+  <td><span class="badge-estado ${esActivo?'activo':'descanso'}"><span class="dot ${esActivo?'activo':'descanso'}"></span>${esActivo?'Activo':'En descanso'}</span></td>
+  <td style="font-weight:700">${r.servicios||0}</td>
+  <td><div class="act"><button class="btn-act" onclick="editar('${r.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${r.id}')">🗑</button></div></td>`;
+  tbody.appendChild(tr);
+ });
+ document.getElementById('footerInfo').innerText=`Mostrando ${lista.length} de ${repartidores.length} repartidores`;
+}
+function editar(id){ location.href='editar-repartidor.html?id='+id; }
+function eliminar(id){ if(confirm('¿Eliminar repartidor?')) db.ref('repartidores/'+id).remove(); }
+document.getElementById('buscar').addEventListener('input', render);
+document.getElementById('filtroEstado').addEventListener('change', render);
+</script>
+</body>
+                                                                                                                        </html>
