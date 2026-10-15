@@ -61,10 +61,11 @@
   </div>
 </div>
 <script src="clientes-datos.js"></script>
-<script src="clientes-acciones.js"></script>
+<script src="clientes-render.js"></script>
+<script src="clientes-editar.js"></script>
 </body>
-                           </html>
- *{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
+</html>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
 body{background:#f8f9fb;zoom:0.9}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f3;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
 .leftTop{display:flex;align-items:center;gap:12px}
@@ -117,3 +118,104 @@ body{background:#f8f9fb;zoom:0.9}
 .btn-save{background:#E10600;color:#fff;border-radius:999px;padding:9px 16px;border:none;font-weight:700;cursor:pointer}
 .btn-cancel{background:#f3f4f6;border-radius:999px;padding:9px 16px;border:none;font-weight:600;cursor:pointer}
 .info-box{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;margin:8px 0;font-size:11px}
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+let clientes=[], filtrados=[], pagina=1, porPag=8, tab='lista';
+let editKey=null;
+function formatFecha(f){ if(!f) return '-'; if(f.includes('-')){const [y,m,d]=f.split('-');return `${d}/${m}/${y}`;}return f;}
+function normalizarCliente(nombre){
+  if(!nombre) return nombre;
+  const n=nombre.trim().toLowerCase();
+  if(n==='cliente (centro)' || n==='cliente centro' || n==='cliente(centro)') return 'Mil sabores';
+  return nombre.trim();
+}
+db.ref('ventas').on('value', snap=>{
+  const v=snap.val()||{};
+  const updates={};
+  Object.entries(v).forEach(([id, p])=>{
+    const orig=(p.cliente||'').trim();
+    const norm=normalizarCliente(orig);
+    if(norm!==orig){ updates[id+'/cliente']=norm; }
+  });
+  if(Object.keys(updates).length>0){ db.ref('ventas').update(updates); return; }
+  const map={};
+  Object.entries(v).forEach(([id, p])=>{
+    const nombre=normalizarCliente(p.cliente||'Sin nombre').trim();
+    const key=nombre.toLowerCase();
+    if(!map[key]) map[key]={nombre, telefono:p.telefono||'', direccion:p.direccion||'', total:0, totalDinero:0, ultimo:'', ultimoRaw:'', historial:[]};
+    const valor=parseFloat(p.precio||p.valor||0);
+    map[key].total++;
+    map[key].totalDinero+=valor;
+    map[key].historial.push({fecha:p.fecha||'', valor:valor, id:id});
+    if(p.telefono &&!map[key].telefono) map[key].telefono=p.telefono;
+    if(p.direccion &&!map[key].direccion) map[key].direccion=p.direccion;
+    if(!map[key].ultimoRaw || (p.fecha||'')>map[key].ultimoRaw){ map[key].ultimoRaw=p.fecha||''; map[key].ultimo=p.fecha||''; }
+  });
+  Object.values(map).forEach(c=>{ c.historial.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'')); });
+  db.ref('clientes').once('value', s=>{
+    const extras=s.val()||{};
+    Object.values(extras).forEach(ec=>{
+      const k=(ec.nombre||'').toLowerCase().trim();
+      const normK=normalizarCliente(k).toLowerCase();
+      if(map[normK]){
+        if(ec.telefono) map[normK].telefono=ec.telefono;
+        if(ec.direccion) map[normK].direccion=ec.direccion;
+        if(ec.estado) map[normK].estado=ec.estado;
+      }
+    });
+    clientes=Object.values(map).map(c=>({...c, estado:c.estado||'Activo'}));
+    clientes.sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
+    aplicarFiltros();
+  });
+});
+function cambiarTab(t){
+  tab=t;
+  document.getElementById('tabLista').classList.toggle('active',t==='lista');
+  document.getElementById('tabRanking').classList.toggle('active',t==='ranking');
+  document.getElementById('tabFrecuentes').classList.toggle('active',t==='frecuentes');
+  const mainCard=document.getElementById('mainCard');
+  const rankingCard=document.getElementById('rankingCard');
+  const frecuentesCard=document.getElementById('frecuentesCard');
+  const container=document.getElementById('container');
+  if(t==='ranking'){
+    mainCard.style.display='none';
+    frecuentesCard.style.display='none';
+    rankingCard.classList.add('show');
+    rankingCard.style.display='block';
+    container.style.gridTemplateColumns='1fr';
+  }else if(t==='frecuentes'){
+    mainCard.style.display='block';
+    rankingCard.classList.remove('show');
+    rankingCard.style.display='none';
+    frecuentesCard.style.display='block';
+    container.style.gridTemplateColumns='1fr 360px';
+    filtrados=clientes.filter(c=>c.total>=3).sort((a,b)=>b.total-a.total);
+    if(filtrados.length===0) filtrados=[...clientes].sort((a,b)=>b.total-a.total);
+  }else{
+    mainCard.style.display='block';
+    rankingCard.classList.remove('show');
+    rankingCard.style.display='none';
+    frecuentesCard.style.display='none';
+    container.style.gridTemplateColumns='1fr 360px';
+    filtrados=[...clientes].sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
+  }
+  pagina=1;
+  render();
+}
+function aplicarFiltros(){
+  const q=document.getElementById('buscar').value.toLowerCase().trim();
+  const mes=document.getElementById('fMes').value;
+  let base=[...clientes];
+  if(tab==='frecuentes') base=base.filter(c=>c.total>=3);
+  base=base.filter(c=>{
+    if(q &&!`${c.nombre} ${c.telefono} ${c.direccion}`.toLowerCase().includes(q)) return false;
+    if(mes && c.ultimoRaw){ if(parseInt(c.ultimoRaw.split('-')[1])!==parseInt(mes)) return false; }
+    return true;
+  });
+  if(tab==='lista') base.sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
+  else base.sort((a,b)=>b.total-a.total);
+  filtrados=base;
+  pagina=1;
+  render();
+}
