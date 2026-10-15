@@ -1,1 +1,54 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Registro de Venta - Kigo Admin</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#fff}
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;position:sticky;top:0;z-index:50}
+.hamburger{width:40px;height:40px;border:none;background:transparent;display:flex;flex-direction:column;justify-content:center;gap:6px;cursor:pointer}
+.hamburger span{height:4px;background:#111;border-radius:4px;display:block;width:28px}
+.btn-cerrar{border:1.5px solid #e11d2a;background:#fff;color:#111;border-radius:999px;padding:8px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:100}
+.side-menu{position:fixed;left:0;top:0;bottom:0;width:280px;background:#fff;box-shadow:10px 0 30px rgba(0,0,0,.2);transform:translateX(-100%);transition:.3s;z-index:101;padding:20px 16px;display:flex;flex-direction:column}
+.side-menu.open{transform:translateX(0)}
+.side-overlay.open{display:block}
+.side-logo{font-family:'Segoe Script',cursive;font-size:32px;margin-bottom:20px}
+.side-logo span{color:#e11d2a}
+.menu-item{padding:14px 16px;border-radius:12px;border:none;background:#fff;text-align:left;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.menu-item.active{background:#e11d2a;color:#fff}
+.title-main{font-family:'Segoe Script',cursive;font-size:42px;font-weight:900;margin:8px 0 16px;position:relative;display:inline-block}
+.title-main:after{content:'';position:absolute;left:0;bottom:-6px;width:90%;height:6px;background:#e11d2a;border-radius:999px;transform:rotate(-1deg)}
+.label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;margin:14px 0 6px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input{width:100%;padding:12px 38px 12px 14px;border:1.5px solid #ddd;border-radius:16px;font-size:14px;background:#fff;outline:none}
+.btn-x{position:absolute;right:8px;width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;cursor:pointer}
+.tipo-box{display:flex;gap:10px}
+.tipo{flex:1;padding:12px;border-radius:16px;border:1.5px solid #111;background:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;cursor:pointer}
+.tipo.active{background:#e11d2a;color:#fff;border-color:#e11d2a}
+.total-box{background:#e9ecef;border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.total-title{font-family:'Segoe Script',cursive;font-size:28px;font-weight:900;position:relative}
+.total-title:after{content:'';position:absolute;left:0;bottom:0;width:100%;height:4px;background:#e11d2a;border-radius:999px}
+.btn-reg{width:100%;margin-top:16px;background:#e11d2a;color:#fff;border:none;border-radius:16px;padding:15px;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.card{background:#fff;border-radius:20px;margin:12px 0;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<button class="hamburger" onclick="openMenu()"><span></span><span></span><span></span></button>
+<button class="btn-cerrar" onclick="cerrarSesion()">↪ Cerrar sesión</button>
+</div>
+<div class="side-overlay" id="sideOverlay" onclick="closeMenu()"></div>
+<div class="side-menu" id="sideMenu">
+<div class="side-logo">Kigo <span>X</span>press</div>
+<button class="menu-item active" id="mRegistro" onclick="showTab('Registro');closeMenu()">📋 Registro de Venta</button>
+<button class="menu-item" id="mHistorial" onclick="showTab('Historial');closeMenu()">🕒 Historial</button>
+<button class="menu-item" id="mClientes" onclick="showTab('Clientes');closeMenu()">👥 Clientes</button>
+<button class="menu-item" id="mPresupuesto" onclick="showTab('Presupuesto');closeMenu()">💰 Presupuesto</button>
+<button class="menu-item" id="mRepartidores" onclick="showTab('Repartidores');closeMenu()">🏍️ Repartidores</button>
+<button class="menu-item" style="margin-top:auto;color:#dc2626" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+</div>
