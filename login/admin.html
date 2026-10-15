@@ -2,322 +2,135 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Registro de Venta - Kigo Admin</title>
-<script src="https://unpkg.com/lucide@latest"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Registro de Venta - Kigo</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#fff}
-.top-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;position:sticky;top:0;z-index:50}
-.hamburger{width:40px;height:40px;border:none;background:transparent;display:flex;flex-direction:column;justify-content:center;gap:6px;cursor:pointer}
-.hamburger span{height:4px;background:#111;border-radius:4px;display:block;width:28px}
-.btn-cerrar{border:1.5px solid #e11d2a;background:#fff;color:#111;border-radius:999px;padding:8px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer}
-.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:100}
-.side-menu{position:fixed;left:0;top:0;bottom:0;width:280px;background:#fff;box-shadow:10px 0 30px rgba(0,0,0,.2);transform:translateX(-100%);transition:.3s;z-index:101;padding:20px 16px;display:flex;flex-direction:column}
-.side-menu.open{transform:translateX(0)}
-.side-overlay.open{display:block}
-.side-logo{font-family:'Segoe Script',cursive;font-size:32px;margin-bottom:20px}
-.side-logo span{color:#e11d2a}
-.menu-item{padding:14px 16px;border-radius:12px;border:none;background:#fff;text-align:left;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.menu-item.active{background:#e11d2a;color:#fff}
-.title-main{font-family:'Segoe Script',cursive;font-size:42px;font-weight:900;margin:8px 0 16px;position:relative;display:inline-block}
-.title-main:after{content:'';position:absolute;left:0;bottom:-6px;width:90%;height:6px;background:#e11d2a;border-radius:999px;transform:rotate(-1deg)}
-.label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;margin:14px 0 6px}
-.input-wrap{position:relative;display:flex;align-items:center}
-.input{width:100%;padding:12px 38px 12px 14px;border:1.5px solid #ddd;border-radius:16px;font-size:14px;background:#fff;outline:none}
-.btn-x{position:absolute;right:8px;width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;cursor:pointer}
-.tipo-box{display:flex;gap:10px}
-.tipo{flex:1;padding:12px;border-radius:16px;border:1.5px solid #111;background:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;cursor:pointer}
-.tipo.active{background:#e11d2a;color:#fff;border-color:#e11d2a}
-.total-box{background:#e9ecef;border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:16px}
-.total-title{font-family:'Segoe Script',cursive;font-size:28px;font-weight:900;position:relative}
-.total-title:after{content:'';position:absolute;left:0;bottom:0;width:100%;height:4px;background:#e11d2a;border-radius:999px}
-.btn-reg{width:100%;margin-top:16px;background:#e11d2a;color:#fff;border:none;border-radius:16px;padding:15px;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-.card{background:#fff;border-radius:20px;margin:12px 0;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#fff;color:#111}
+.top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;background:#fff;z-index:10;border-bottom:1px solid #f0f0f0}
+.hamb{width:34px;height:24px;display:flex;flex-direction:column;justify-content:space-between;border:none;background:transparent;padding:0;cursor:pointer;flex-shrink:0}
+.hamb span{height:4px;background:#111;border-radius:3px;width:100%;display:block;transition:.2s}
+.btn-cerrar{border:1.6px solid #e11d2a;border-radius:999px;padding:8px 16px;background:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.wrap{max-width:500px;margin:0 auto;padding:4px 20px 30px}
+.title{font-family:'Segoe Script','Brush Script MT',cursive;font-size:44px;font-weight:900;margin:6px 0 18px;line-height:1;transform:rotate(-1deg)}
+.title u{text-decoration:none;position:relative}
+.title u:after{content:'';position:absolute;left:-4px;right:-10px;bottom:-6px;height:7px;background:#e11d2a;border-radius:999px;transform:rotate(-1.5deg)}
+.lbl{font-size:15px;font-weight:600;margin:16px 0 6px;display:flex;align-items:center;gap:8px}
+.field{position:relative}
+.inp{width:100%;border:1.6px solid #e0e0e0;border-radius:999px;padding:14px 44px 14px 18px;font-size:16px;background:#fff;outline:none}
+.inp:focus{border-color:#e11d2a}
+.clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:1.2px solid #ddd;background:#fff;color:#888;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;z-index:2}
+/* FIX BOTONES MOTO/TRANSPORTE - NO SE DEFORMAN */
+.tipo{ display:flex; gap:12px; margin-top:4px; width:100%; }
+.btn-tipo{
+  flex:1 1 0;
+  min-width:0;
+  height:54px;
+  border-radius:999px;
+  padding:0 10px;
+  font-weight:800;
+  font-size:14px;
+  border:1.8px solid #111;
+  background:#fff;
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  cursor:pointer;
+  transition:all .15s ease;
+  white-space:nowrap;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  appearance:none;
+  line-height:1;
+}
+.btn-tipo:active{ transform:scale(0.98); }
+.btn-tipo.active{ background:#e11d2a; color:#fff; border-color:#e11d2a; box-shadow:0 4px 12px rgba(225,29,42,.25); }
+.btn-tipo:not(.active):hover{ background:#fafafa; }
+.total{background:#edeff2;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.total-lab{font-family:'Segoe Script',cursive;font-size:34px;font-weight:900;position:relative}
+.total-lab:after{content:'';position:absolute;left:0;bottom:2px;width:100%;height:5px;background:#e11d2a;border-radius:999px}
+.total-val{font-size:28px;font-weight:900;color:#e11d2a}
+.btn-reg{width:100%;margin-top:16px;background:#e11d2a;color:#fff;border:none;border-radius:999px;padding:16px;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 6px 16px rgba(225,29,42,.25)}
+/* MENU LATERAL IZQUIERDA - NUEVO */
+.menu-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:100;backdrop-filter:blur(2px)}
+.menu-bg.open{display:block}
+.menu{position:fixed;left:0;top:0;bottom:0;width:300px;background:#fff;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:101;padding:0;display:flex;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.18)}
+.menu.open{transform:translateX(0)}
+.menu-head{padding:20px 20px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+.menu-logo{font-family:'Segoe Script',cursive;font-size:28px;font-weight:900}
+.menu-logo span{color:#e11d2a}
+.menu-close{width:32px;height:32px;border-radius:50%;border:1px solid #e5e5e5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.menu-body{flex:1;overflow:auto;padding:14px 12px}
+.menu-sec{font-size:11px;font-weight:800;letter-spacing:.8px;color:#9ca3af;margin:14px 10px 8px;text-transform:uppercase}
+.m-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border-radius:12px;border:none;background:transparent;text-align:left;font-size:15px;font-weight:600;color:#111;cursor:pointer;text-decoration:none;transition:.15s}
+.m-item:hover{background:#f9fafb}
+.m-item.active{background:#e11d2a;color:#fff}
+.m-item .ico{width:22px;text-align:center}
+.menu-foot{padding:14px 12px;border-top:1px solid #f0f0f0}
+.suggest{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:16px;margin-top:6px;z-index:20;max-height:180px;overflow:auto;display:none;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.s-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid #f3f3f3}
 </style>
 </head>
 <body>
-<div class="top-bar">
-<button class="hamburger" onclick="openMenu()"><span></span><span></span><span></span></button>
+<div class="top">
+<button class="hamb" onclick="openM()" aria-label="Menu"><span></span><span></span><span></span></button>
 <button class="btn-cerrar" onclick="cerrarSesion()">↪ Cerrar sesión</button>
 </div>
-<div class="side-overlay" id="sideOverlay" onclick="closeMenu()"></div>
-<div class="side-menu" id="sideMenu">
-<div class="side-logo">Kigo <span>X</span>press</div>
-<button class="menu-item active" id="mRegistro" onclick="showTab('Registro');closeMenu()">📋 Registro de Venta</button>
-<button class="menu-item" id="mHistorial" onclick="showTab('Historial');closeMenu()">🕒 Historial</button>
-<button class="menu-item" id="mClientes" onclick="showTab('Clientes');closeMenu()">👥 Clientes</button>
-<button class="menu-item" id="mPresupuesto" onclick="showTab('Presupuesto');closeMenu()">💰 Presupuesto</button>
-<button class="menu-item" id="mRepartidores" onclick="showTab('Repartidores');closeMenu()">🏍️ Repartidores</button>
-<button class="menu-item" style="margin-top:auto;color:#dc2626" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+<div class="menu-bg" id="menuBg" onclick="closeM()"></div>
+<div class="menu" id="menu">
+<div class="menu-head">
+<div class="menu-logo">Kigo <span>X</span>press</div>
+<button class="menu-close" onclick="closeM()">✕</button>
 </div>
-<div style="max-width:900px;margin:0 auto;padding:0 16px 90px">
-<div id="vistaRegistro">
-<div class="title-main">Registro de Venta</div>
+<div class="menu-body">
+<div class="menu-sec">Ventas</div>
+<!-- Registro no lleva ruta porque ya estas ahi -->
+<button class="m-item active" onclick="closeM()"><span class="ico">📋</span> Registro de Venta</button>
+<a class="m-item" href="cotizaciones.html"><span class="ico">🧾</span> Cotizaciones</a>
+<a class="m-item" href="historial.html"><span class="ico">🕒</span> Historial de pedidos</a>
 
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><circle cx="12" cy="7" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Nombre del Cliente</div>
-<div class="input-wrap" style="flex-direction:column;align-items:stretch">
-<div style="position:relative;width:100%;display:flex;align-items:center">
-<input id="cliente" class="input" placeholder="Ej: Juan Pérez" oninput="calcTotal(); filtrarSugerencias(this.value)" autocomplete="off">
-<button class="btn-x" onclick="clearInput('cliente'); ocultarSugerencias()">x</button>
-</div>
-<div id="sugerenciasClientes" class="suggest-box"></div>
-</div>
+<div class="menu-sec">Gestión</div>
+<a class="m-item" href="clientes.html"><span class="ico">👥</span> Clientes</a>
+<a class="m-item" href="presupuesto.html"><span class="ico">💰</span> Presupuesto</a>
+<a class="m-item" href="repartidores.html"><span class="ico">🏍️</span> Repartidores</a>
 
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Fecha</div>
-<div class="input-wrap">
-<input id="fechaVenta" type="date" class="input">
-<button class="btn-x" onclick="resetFechaHoy()">x</button>
+<div class="menu-sec">Sistema</div>
+<a class="m-item" href="configuracion.html"><span class="ico">⚙️</span> Configuración</a>
 </div>
-
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><circle cx="7" cy="13" r="3"/><circle cx="17" cy="13" r="3"/><path d="M10 13h4"/></svg> Tipo de Servicio</div>
-<div class="tipo-box">
-<button id="btnMoto" class="tipo active" onclick="setTipo('moto')">🏍️ Moto Mandado</button>
-<button id="btnTrans" class="tipo" onclick="setTipo('transporte')">🚚 Transporte</button>
-</div>
-
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><path d="M20 12V8H6a2 2 0 0 1-2-2V4"/><path d="M20 12a2 2 0 0 1-2 2h-5"/></svg> Precio</div>
-<div class="input-wrap">
-<input id="precio" type="number" class="input" placeholder="$ 0.00" oninput="calcTotal()">
-<button class="btn-x" onclick="clearInput('precio')">x</button>
-</div>
-
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><circle cx="12" cy="7" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Repartidor</div>
-<div class="input-wrap">
-<select id="repartidor" class="input"><option value="">Seleccionar repartidor</option></select>
-<button class="btn-x" onclick="clearInput('repartidor')">x</button>
-</div>
-
-<div class="label"><svg viewBox="0 0 24 24" fill="none" stroke="#e11d2a" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg> Descuento</div>
-<div class="input-wrap">
-<input id="descuento" type="number" class="input" placeholder="$ 0.00 (opcional)" oninput="calcTotal()">
-<button class="btn-x" onclick="clearInput('descuento')">x</button>
-</div>
-
-<div class="total-box"><span class="total-title">Total</span><span id="totalTxt" style="font-size:28px;font-weight:900;color:#e11d2a">$ 0.00</span></div>
-<button class="btn-reg" onclick="registrarVenta()">✓ Registrar Venta</button>
-</div>
-<div id="vHistorial" style="display:none">
-<div style="font-weight:900;font-size:22px;margin-top:10px">Historial</div>
-<input id="buscarCliente" placeholder="Buscar cliente" class="inp" style="margin-top:10px" oninput="aplicarFiltros()">
-<select id="filtroRepartidor" class="inp" style="margin-top:8px" onchange="aplicarFiltros()"><option value="">Todos los repartidores</option></select>
-<input id="filtroFechaExacta" type="date" class="inp" style="margin-top:8px" onchange="aplicarFiltros()">
-<div id="tbodyVentas" style="margin-top:12px"></div>
-</div>
-
-<div id="vClientes" style="display:none">
-<div style="font-weight:900;font-size:22px;margin-top:10px">Clientes</div>
-<div id="listaClientesImagen" style="margin-top:10px"></div>
-</div>
-
-<div id="vPresupuesto" style="display:none">
-<div style="font-weight:900;font-size:22px;margin-top:10px">Presupuesto</div>
-<div style="margin-top:8px">Pagado <b id="presuIngTot">$0</b> | Deben <b id="presuPorCobrar">$0</b> | Balance <b id="presuBalance">$0</b></div>
-<select id="presuRepSelect" class="inp" style="margin-top:8px" onchange="renderPresu()"><option value="TODOS">Todos</option></select>
-<input id="presuFecha" type="date" class="inp" style="margin-top:8px" onchange="renderPresu()">
-<div id="tbodyPresu" style="margin-top:10px"></div>
-</div>
-
-<div id="vRepartidores" style="display:none">
-<div style="font-weight:900;font-size:22px;margin-top:10px">Repartidores</div>
-<input id="buscarRep" class="inp" style="margin-top:8px" placeholder="Buscar" oninput="renderReps()">
-<div id="listaRepsImagen" style="margin-top:10px"></div>
+<div class="menu-foot">
+<button class="m-item" style="color:#e11d2a" onclick="cerrarSesion()"><span class="ico">🚪</span> Cerrar sesión</button>
 </div>
 </div>
 
-<div id="overlayExito" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:999">
-<div style="background:#fff;border-radius:20px;padding:24px;text-align:center"><b>¡Registro Exitoso!</b></div>
+<div class="wrap">
+<div id="vRegistro">
+<div class="title"><u>Registro de Venta</u></div>
+
+<div class="lbl"><span>👤</span> Nombre del Cliente</div>
+<div class="field">
+<input id="cliente" class="inp" placeholder="Ej: Juan Pérez" oninput="calcTotal(); filtrarSug(this.value)" autocomplete="off">
+<button type="button" class="clear" onclick="clearF('cliente')">✕</button>
+<div id="sugBox" class="suggest"></div>
 </div>
 
-<script>
-const firebaseConfig = { 
-apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", 
-authDomain: "registro-ventas-kigo.firebaseapp.com", 
-databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", 
-projectId: "registro-ventas-kigo", 
-storageBucket: "registro-ventas-kigo.firebasestorage.app", 
-messagingSenderId: "494693818399", 
-appId: "1:494693818399:web:34312307ec5cd52190752a" 
-};
-firebase.initializeApp(firebaseConfig); 
-const db = firebase.database();
+<div class="lbl"><span>📅</span> Fecha</div>
+<div class="field">
+<input id="fechaVenta" type="date" class="inp">
+<button type="button" class="clear" onclick="clearF('fechaVenta')">✕</button>
+</div>
 
-// Protege admin - si no es admin lo saca al login
-(function(){ 
-if(localStorage.getItem('kigo_rol')!=='admin'){ 
-location.href='../index.html'; 
-} 
-})();
+<div class="lbl"><span>🏍️</span> Tipo de Servicio</div>
+<div class="tipo">
+<!-- FIX: type=button para que no se deformen -->
+<button type="button" id="btnMoto" class="btn-tipo active" onclick="setTipo('moto')">🏍️ Moto Mandado</button>
+<button type="button" id="btnTrans" class="btn-tipo" onclick="setTipo('transporte')">🚚 Transporte</button>
+</div>
 
-function cerrarSesion(){ 
-localStorage.clear(); 
-location.href='../index.html'; 
-}
-
-function openM(){ 
-document.getElementById('menu').classList.add('open'); 
-document.getElementById('menuBg').classList.add('open'); 
-}
-
-function closeM(){ 
-document.getElementById('menu').classList.remove('open'); 
-document.getElementById('menuBg').classList.remove('open'); 
-}
-let tipoActual='moto';
-
-function clearF(id){
-const el=document.getElementById(id);
-el.value='';
-if(el.tagName==='SELECT') el.selectedIndex=0;
-calcTotal();
-if(id==='cliente') document.getElementById('sugBox').style.display='none';
-}
-
-function setTipo(t){
-tipoActual=t;
-document.getElementById('btnMoto').className=t==='moto'?'btn-tipo active':'btn-tipo';
-document.getElementById('btnTrans').className=t==='transporte'?'btn-tipo active':'btn-tipo';
-}
-
-function calcTotal(){
-let p=parseFloat(document.getElementById('precio').value)||0;
-let d=parseFloat(document.getElementById('descuento').value)||0;
-let tot=p-d;
-if(tot<0) tot=0;
-document.getElementById('totalTxt').innerText='$ '+tot.toFixed(2);
-return tot;
-}
-
-function showV(n){
-document.getElementById('vRegistro').style.display=n==='Registro'?'block':'none';
-document.getElementById('vHistorial').style.display=n==='Historial'?'block':'none';
-document.getElementById('vClientes').style.display=n==='Clientes'?'block':'none';
-document.getElementById('vPresupuesto').style.display=n==='Presupuesto'?'block':'none';
-document.getElementById('vRepartidores').style.display=n==='Repartidores'?'block':'none';
-document.querySelectorAll('.m-item').forEach(e=>e.classList.remove('active'));
-const id='mm'+n;
-if(document.getElementById(id)) document.getElementById(id).classList.add('active');
-}
-
-document.getElementById('fechaVenta').value=new Date().toISOString().split('T')[0];
-
-let ventasCache=[], clientesDB={}, repartidoresDB={};
-
-function getTarifa(nombre, tipo){
-const e=Object.values(repartidoresDB).find(r=>r.nombre===nombre);
-if(!e) return null;
-return tipo==='moto'?parseFloat(e.tarifaM)||5:parseFloat(e.tarifaT)||80;
-}
-
-function refreshReps(){
-const sel=document.getElementById('repartidor');
-const lista=Object.values(repartidoresDB).map(r=>r.nombre);
-const u=[...new Set(lista)];
-sel.innerHTML='<option value="">Seleccionar repartidor</option>'+u.map(r=>`<option value="${r}">${r}</option>`).join('');
-}
-
-db.ref('clientes').on('value',s=>{ clientesDB=s.val()||{}; });
-db.ref('repartidores').on('value',s=>{ repartidoresDB=s.val()||{}; refreshReps(); renderReps(); renderPresu(); });
-
-db.ref('ventas').on('value',snap=>{
-const val=snap.val()||{};
-ventasCache=Object.entries(val).map(([id,v])=>({id,...v})).sort((a,b)=>b.timestamp-a.timestamp);
-const reps=[...new Set(ventasCache.map(v=>v.repartidor).filter(Boolean))];
-document.getElementById('filtroRepartidor').innerHTML='<option value="">Todos los repartidores</option>'+reps.map(r=>`<option value="${r}">${r}</option>`).join('');
-document.getElementById('presuRepSelect').innerHTML='<option value="TODOS">Todos</option>'+reps.map(r=>`<option value="${r}">${r}</option>`).join('');
-aplicarFiltros();
-renderPresu();
-});
-
-function obtenerNombres(){
-const s=new Set();
-Object.values(clientesDB).forEach(c=>{ if(c.nombre) s.add(c.nombre); });
-ventasCache.forEach(v=>{ if(v.cliente) s.add(v.cliente); });
-return [...s];
-}
-
-function filtrarSug(q){
-const box=document.getElementById('sugBox');
-if(!q){ box.style.display='none'; return; }
-const todos=obtenerNombres();
-const f=todos.filter(n=>n.toLowerCase().includes(q.toLowerCase())).slice(0,6);
-if(!f.length){ box.style.display='none'; return; }
-box.innerHTML=f.map(n=>`<div class="s-item" onclick="selCli('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('');
-box.style.display='block';
-}
-
-function selCli(n){
-document.getElementById('cliente').value=n;
-document.getElementById('sugBox').style.display='none';
-}
-function aplicarFiltros(){
-let lista=[...ventasCache];
-const q=(document.getElementById('buscarCliente').value||'').toLowerCase();
-const rep=document.getElementById('filtroRepartidor').value;
-const fe=document.getElementById('filtroFechaExacta').value;
-if(q) lista=lista.filter(v=>v.cliente.toLowerCase().includes(q));
-if(rep) lista=lista.filter(v=>v.repartidor===rep);
-if(fe) lista=lista.filter(v=>v.fecha===fe);
-document.getElementById('tbodyVentas').innerHTML=lista.slice(0,100).map(v=>`
-<div style="padding:10px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between">
-<div><b>${v.cliente}</b><br><small>${v.fecha} • ${v.pedido} • $${v.total}</small></div>
-<div><small style="color:#e11d2a;font-weight:700">${v.estado}</small></div>
-</div>`).join('')||'<div style="color:#999;text-align:center;padding:20px">Sin ventas</div>';
-}
-
-function renderReps(){
-const c=document.getElementById('listaRepsImagen');
-c.innerHTML=Object.values(repartidoresDB).map(r=>`<div style="padding:10px 0;border-bottom:1px solid #eee">${r.nombre} - ${r.telefono||''}</div>`).join('')||'Sin repartidores';
-}
-
-function renderPresu(){
-if(!document.getElementById('presuFecha').value) document.getElementById('presuFecha').value=new Date().toISOString().split('T')[0];
-const fecha=document.getElementById('presuFecha').value;
-const rep=document.getElementById('presuRepSelect').value;
-let lista=ventasCache.filter(v=>v.fecha===fecha);
-if(rep!=='TODOS') lista=lista.filter(v=>v.repartidor===rep);
-const pag=lista.filter(v=>v.estado==='Pagado').reduce((a,b)=>a+(b.pagaKigoBase||0),0);
-const deb=lista.filter(v=>v.estado==='Debe').reduce((a,b)=>a+(b.pagaKigoBase||0),0);
-document.getElementById('presuIngTot').innerText='$'+pag;
-document.getElementById('presuPorCobrar').innerText='$'+deb;
-document.getElementById('presuBalance').innerText='$'+(pag+deb);
-document.getElementById('tbodyPresu').innerHTML=lista.map(v=>`<div style="padding:8px 0;border-bottom:1px solid #eee">${v.repartidor} - $${v.pagaKigoBase} - ${v.estado}</div>`).join('')||'Sin datos';
-}
-
-function registrarVenta(){
-let cliente=document.getElementById('cliente').value.trim();
-let fecha=document.getElementById('fechaVenta').value;
-let precio=parseFloat(document.getElementById('precio').value)||0;
-let repartidor=document.getElementById('repartidor').value;
-let total=calcTotal();
-if(!cliente||!fecha||precio<=0){ alert('Completa datos'); return; }
-let tarifa=getTarifa(repartidor, tipoActual);
-let paga=tarifa!==null?tarifa:5;
-const data={
-cliente,
-tipo:tipoActual,
-precio,
-descuento:parseFloat(document.getElementById('descuento').value)||0,
-total,
-pagaKigo:paga,
-pagaKigoBase:paga,
-ganancia:total-paga,
-repartidor,
-fecha,
-timestamp:Date.now(),
-estado:'Pagado',
-pedido:'#'+Math.floor(1000+Math.random()*9000)
-};
-db.ref('ventas').push(data).then(()=>{
-document.getElementById('overlayExito').style.display='flex';
-setTimeout(()=>document.getElementById('overlayExito').style.display='none',2000);
-document.getElementById('cliente').value='';
-document.getElementById('precio').value='';
-document.getElementById('descuento').value='';
-document.getElementById('totalTxt').innerText='$ 0.00';
-});
-}
-</script>
-</body>
-</html>
+<div class="lbl"><span>🏷️</span> Precio</div>
+<div class="field">
+<input id="precio" type="number" class="inp" placeholder="$ 0.00" oninput="calcTotal()">
+<button type="button" class="clear" onclick="clearF('precio')">✕</button>
+</div>  
