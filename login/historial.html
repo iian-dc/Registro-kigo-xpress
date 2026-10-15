@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historial de pedidos - Kigo Xpress</title>
+<title>Historial - Kigo Xpress</title>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -19,51 +19,33 @@ body{background:#f5f5f5;zoom:0.9}
 .head-left{display:flex;gap:10px;align-items:center}
 .icon-clip{width:36px;height:36px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E10600}
 .head-sec h1{font-size:14px;font-weight:800}.head-sec p{font-size:11px;color:#6b7280}
-.head-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.head-right{display:flex;gap:8px}
 .btn-actualizar{border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;display:flex;gap:6px;align-items:center;cursor:pointer}
 .total-ped{background:#E10600;color:#fff;border-radius:999px;padding:7px 14px;font-size:11px;font-weight:800}
-
-/* FILTROS ORGANIZADOS */
 .filters{background:#fff;border-radius:12px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .inp-f{display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;border-radius:999px;padding:0 10px;height:34px;background:#fff}
 .inp-f input,.inp-f select{border:none;outline:none;font-size:11.5px;width:100%;background:transparent}
 .search-box{display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;border-radius:999px;padding:0 12px;height:34px;flex:1;min-width:180px;background:#f9fafb}
 .search-box input{border:none;outline:none;font-size:11.5px;width:100%;background:transparent}
 .btn-buscar{background:#111;color:#fff;border-radius:999px;border:none;padding:0 14px;height:34px;font-weight:700;font-size:11px;display:flex;gap:5px;align-items:center;cursor:pointer}
-
-/* TABLA */
 .table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .table{width:100%;border-collapse:collapse;min-width:980px}
 .table th{font-size:10px;font-weight:800;color:#6b7280;text-transform:uppercase;padding:10px 8px;background:#fafafa;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:left}
 .table td{font-size:11px;padding:8px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
 .badge-serv{border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700;display:inline-flex;gap:4px;align-items:center}
 .badge-moto{background:#111;color:#fff}.badge-trans{background:#E10600;color:#fff}
-
-/* BOTON SI/NO CLICKEABLE */
-.badge-pago{border-radius:999px;padding:5px 10px;font-weight:800;font-size:10px;display:inline-flex;gap:4px;align-items:center;cursor:pointer;border:none;transition:.15s;user-select:none}
+.badge-pago{border-radius:999px;padding:5px 12px;font-weight:800;font-size:10px;display:inline-flex;gap:4px;align-items:center;cursor:pointer;border:none;transition:.15s;user-select:none}
 .badge-pago-si{background:#16a34a;color:#fff}.badge-pago-no{background:#E10600;color:#fff}
 .badge-pago:active{transform:scale(0.92)}
-
-.badge-estado{background:#111;color:#fff;border-radius:999px;padding:4px 10px;font-weight:700;font-size:10px;display:inline-flex}
-.badge-estado.en-camino{background:#facc15;color:#111}
+.badge-estado{border-radius:999px;padding:4px 10px;font-weight:800;font-size:10px;display:inline-flex}
+.badge-estado.pagado{background:#16a34a;color:#fff}.badge-estado.debe{background:#E10600;color:#fff}
 .act{display:flex;gap:4px}
 .btn-act{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .btn-edit{background:#facc15}.btn-del{background:#111;color:#fff}
 .footer-table{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid #e5e7eb;background:#fff;font-size:10px;color:#94a3b8}
 .pag{display:flex;gap:4px}.pag button{width:24px;height:24px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:11px}.pag button.active{background:#E10600;color:#fff;border-color:#E10600;font-weight:800}
-
-/* RESPONSIVE */
-@media(max-width:768px){
- .top{height:50px}
- .filters{flex-direction:column;align-items:stretch}
- .inp-f,.search-box{width:100%}
- .head-sec{flex-direction:column;align-items:flex-start}
- .table-wrap{border-radius:10px}
- .table-wrap::-webkit-scrollbar{height:6px}
- .table-wrap::-webkit-scrollbar-thumb{background:#E10600;border-radius:999px}
- .aviso-slide{display:flex!important}
-}
 .aviso-slide{display:none;justify-content:center;font-size:10px;color:#E10600;font-weight:700;padding:4px 0 8px;gap:4px}
+@media(max-width:768px){.filters{flex-direction:column;align-items:stretch}.inp-f,.search-box{width:100%}.head-sec{flex-direction:column;align-items:flex-start}.aviso-slide{display:flex!important}.table-wrap::-webkit-scrollbar{height:6px}.table-wrap::-webkit-scrollbar-thumb{background:#E10600;border-radius:999px}}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:14px}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:14px;padding:14px;width:100%;max-width:360px}
@@ -75,52 +57,14 @@ body{background:#f5f5f5;zoom:0.9}
 </style>
 </head>
 <body>
-<div class="top">
-<div class="left">
-<button class="btn-x" onclick="location.href='admin.html'">✕</button>
-<div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div>
-</div>
-<div class="total-ped" id="totalPed">Total: 0</div>
-</div>
-
+<div class="top"><div class="left"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div><div class="total-ped" id="totalPed">Total: 0</div></div>
 <div class="main">
-<div class="head-sec">
-<div class="head-left">
-<div class="icon-clip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>
-<div><h1>Historial de pedidos</h1><p>Consulta y administra todos los pedidos.</p></div>
-</div>
-<div class="head-right">
-<button class="btn-actualizar" onclick="location.reload()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.7 1 6.3 2.6L21 8V2h-6l2.4 2.4A7 7 0 1 0 21 12z"/></svg> Actualizar</button>
-</div>
-</div>
-
-<div class="filters">
-<div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div>
-<div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div>
-<div class="search-box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><circle cx="11" cy="11" r="6"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="fBuscar" placeholder="Buscar aliado..."></div>
-<button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button>
-</div>
-
+<div class="head-sec"><div class="head-left"><div class="icon-clip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div><div><h1>Historial de pedidos</h1><p>Consulta y administra todos los pedidos.</p></div></div><div class="head-right"><button class="btn-actualizar" onclick="location.reload()">Actualizar</button></div></div>
+<div class="filters"><div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div><div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div><div class="search-box"><input id="fBuscar" placeholder="Buscar aliado..."></div><button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button></div>
 <div class="aviso-slide">← Desliza para ver más →</div>
-<div class="table-wrap" id="scrollWrap">
-<table class="table">
-<thead>
-<tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-<div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table><div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div></div>
 </div>
-</div>
-
-<div id="modalEdit" class="modal-bg">
-<div class="modal">
-<h3>Editar pedido</h3>
-<input id="eCliente" placeholder="Aliado"><select id="eTipo"><option value="moto">Moto mandado</option><option value="transporte">Moto transporte</option></select><input id="eRepa" placeholder="Repartidor"><input id="eValor" type="number" placeholder="Valor"><input id="ePago" type="number" placeholder="Pago"><select id="ePagado"><option value="si">Sí</option><option value="no">No</option></select><select id="eEstado"><option value="Entregado">Entregado</option><option value="En camino">En camino</option><option value="Pendiente">Pendiente</option></select>
-<div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div>
-</div>
-</div>
-
+<div id="modalEdit" class="modal-bg"><div class="modal"><h3>Editar pedido</h3><input id="eCliente" placeholder="Aliado"><select id="eTipo"><option value="moto">Moto mandado</option><option value="transporte">Moto transporte</option></select><input id="eRepa" placeholder="Repartidor"><input id="eValor" type="number" placeholder="Valor"><input id="ePago" type="number" placeholder="Pago"><select id="ePagado"><option value="si">Sí</option><option value="no">No</option></select><select id="eEstado"><option value="Entregado">Entregado</option><option value="En camino">En camino</option><option value="Pendiente">Pendiente</option></select><div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div></div></div>
 <script>
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
@@ -130,8 +74,9 @@ let ventas=[], filtradas=[], pagina=1, porPag=25, editId=null;
 db.ref('ventas').on('value', snap=>{
  const v=snap.val()||{};
  ventas=Object.entries(v).map(([id, d])=>({id,...d})).sort((a,b)=>{
-   const na=parseInt(a.pedido||a.id)||0; const nb=parseInt(b.pedido||b.id)||0;
-   return nb-na;
+   const fa = a.fecha || ''; const fb = b.fecha || '';
+   if(fa!==fb) return fb.localeCompare(fa);
+   return (b.timestamp||0)-(a.timestamp||0);
  });
  aplicarFiltros();
 });
@@ -150,9 +95,14 @@ function formatFecha(f){ if(!f) return ''; if(f.includes('-')){const [y,m,d]=f.s
 
 function togglePago(id){
  const v=ventas.find(x=>x.id===id); if(!v) return;
- const actual=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí';
- const nuevo=!actual;
- db.ref('ventas/'+id).update({yaPago:nuevo});
+ const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.yaPago==='Si';
+ const nuevo=!isSi;
+ const valorBase=parseFloat(v.precio||0);
+ if(nuevo){
+   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:valorBase, total:valorBase});
+ }else{
+   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', descuento:0, total:0});
+ }
 }
 
 function render(){
@@ -164,16 +114,18 @@ function render(){
  slice.forEach(v=>{
   const esTrans=(v.tipo||'').toLowerCase().includes('trans');
   const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.yaPago==='Si';
-  const total=v.total!==undefined? v.total : ((parseFloat(v.precio)||0)+(parseFloat(v.descuento)||0));
+  const valor=parseFloat(v.precio||0);
+  const pago=isSi?valor:0;
+  const total=isSi?valor:0;
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">${v.pedido||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${parseFloat(v.precio||0).toFixed(0)}</td><td>$${parseFloat(v.descuento||0).toFixed(0)}</td><td style="font-weight:800">$${parseFloat(total).toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${(v.estado||'').toLowerCase().includes('camino')?'en-camino':''}">${v.estado||'Entregado'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
+  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">${v.pedido||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valor.toFixed(0)}</td><td>$${pago.toFixed(0)}</td><td style="font-weight:800">$${total.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
   tbody.appendChild(tr);
  });
 }
 function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtradas.length/porPag)); pagina=Math.min(max,Math.max(1,pagina+d)); render(); }
 function editar(id){ const v=ventas.find(x=>x.id===id); if(!v) return; editId=id; document.getElementById('eCliente').value=v.cliente||''; document.getElementById('eTipo').value=(v.tipo||'').includes('trans')?'transporte':'moto'; document.getElementById('eRepa').value=v.repartidor||''; document.getElementById('eValor').value=v.precio||0; document.getElementById('ePago').value=v.descuento||0; document.getElementById('ePagado').value=(v.yaPago===false)?'no':'si'; document.getElementById('eEstado').value=v.estado||'Entregado'; document.getElementById('modalEdit').classList.add('open'); }
 function cerrarModal(){document.getElementById('modalEdit').classList.remove('open'); editId=null;}
-function guardarEdicion(){ if(!editId) return; const tot=parseFloat(document.getElementById('eValor').value||0)+parseFloat(document.getElementById('ePago').value||0); db.ref('ventas/'+editId).update({cliente:document.getElementById('eCliente').value,tipo:document.getElementById('eTipo').value,repartidor:document.getElementById('eRepa').value,precio:parseFloat(document.getElementById('eValor').value||0),descuento:parseFloat(document.getElementById('ePago').value||0),total:tot,yaPago:document.getElementById('ePagado').value==='si',estado:document.getElementById('eEstado').value}).then(()=>cerrarModal()); }
+function guardarEdicion(){ if(!editId) return; const isSi=document.getElementById('ePagado').value==='si'; const valor=parseFloat(document.getElementById('eValor').value||0); const pago=isSi?valor:0; const tot=isSi?valor:0; db.ref('ventas/'+editId).update({cliente:document.getElementById('eCliente').value,tipo:document.getElementById('eTipo').value,repartidor:document.getElementById('eRepa').value,precio:valor,descuento:pago,total:tot,yaPago:isSi,estado:isSi?'Pagado':'Debe'}).then(()=>cerrarModal()); }
 function eliminar(id){ if(confirm('¿Eliminar?')) db.ref('ventas/'+id).remove(); }
 document.getElementById('fBuscar').addEventListener('keyup',e=>{if(e.key==='Enter') aplicarFiltros();});
 </script>
