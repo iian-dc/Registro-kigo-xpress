@@ -46,7 +46,7 @@ body{background:#f5f5f5;zoom:0.88}
 <body>
 <div class="top"><div style="display:flex;gap:10px;align-items:center"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div><div class="total-ped" id="totalPed">Total: 0</div></div>
 <div class="main">
-<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Valor fijo | Pago congelado por pedido</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
+<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Valor = servicio | Pago = tarifa congelada por pedido</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
 <div class="filters"><div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div><div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div><div class="search-box"><input id="fBuscar" placeholder="Buscar aliado..."></div><button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button></div>
 <div class="aviso-slide">← Desliza para ver más →</div>
 <div class="table-wrap" id="wrapTabla"><table class="table"><thead><tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table><div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div></div>
@@ -58,8 +58,6 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 let ventas=[], filtradas=[], pagina=1, porPag=30, editId=null, primeraCarga=true;
 let repartidoresMap={};
-const TARIFA_DEFAULT_MANDADO = 5;
-const TARIFA_DEFAULT_TRANSPORTE = 10;
 
 db.ref('repartidores').on('value', snap=>{
   const v=snap.val()||{};
@@ -68,50 +66,43 @@ db.ref('repartidores').on('value', snap=>{
     const key=(r.nombre||'').toLowerCase().trim();
     if(key) repartidoresMap[key]=r;
   });
-  render();
+  if(ventas.length>0) render();
 });
 
-function getTarifaActualRepartidor(nombreRepa, tipo){
+function getTarifaCongelada(v){
+  // 1. Si el pedido ya tiene tarifaCongelada guardada, usar esa (no cambia nunca)
+  if(v.tarifaCongelada!=null && v.tarifaCongelada!=='') return parseInt(v.tarifaCongelada);
+  // 2. Si ya estaba pagado, usar el pago que ya tenía
+  if(v.pago>0) return parseInt(v.pago);
+  if(v.descuento>0) return parseInt(v.descuento);
+  // 3. Si es pedido viejo sin tarifa guardada, default 5 y 10
+  const esTrans=(v.tipo||'').toLowerCase().includes('trans');
+  return esTrans?10:5;
+}
+
+function getTarifaActualParaNuevo(nombreRepa, tipo){
   const key=(nombreRepa||'').toLowerCase().trim();
   const rep=repartidoresMap[key];
   const esTrans=(tipo||'').toLowerCase().includes('trans');
   if(rep){
     if(esTrans){
       if(rep.tarifaTransporte!=null && rep.tarifaTransporte!=='') return parseInt(rep.tarifaTransporte);
-      if(rep.precioTransporte!=null) return parseInt(rep.precioTransporte);
-      return TARIFA_DEFAULT_TRANSPORTE;
+      if(rep.precioTransporte!=null && rep.precioTransporte!=='') return parseInt(rep.precioTransporte);
     }else{
       if(rep.tarifaMandado!=null && rep.tarifaMandado!=='') return parseInt(rep.tarifaMandado);
-      if(rep.precioMandado!=null) return parseInt(rep.precioMandado);
-      return TARIFA_DEFAULT_MANDADO;
+      if(rep.precioMandado!=null && rep.precioMandado!=='') return parseInt(rep.precioMandado);
     }
   }
-  return esTrans?TARIFA_DEFAULT_TRANSPORTE:TARIFA_DEFAULT_MANDADO;
+  return esTrans?10:5;
 }
 
 db.ref('ventas').on('value', snap=>{
- const v=snap.val()||{};
- const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
+ const val=snap.val()||{};
+ const scrollLeft = document.getElementById('wrapTabla')?.scrollLeft || 0;
  const scrollY = window.scrollY;
  const prevPag = pagina;
- let lista=Object.entries(v).map(([id,d])=>({id,...d}));
- 
- // CONGELAR TARIFA EN PEDIDOS VIEJOS
- lista.forEach(item=>{
-   if(item.tarifaCongelada==null){
-     // Si ya estaba pagado, congelar con lo que ya tiene guardado
-     if(item.pago>0) item.tarifaCongelada = parseInt(item.pago);
-     else if(item.descuento>0) item.tarifaCongelada = parseInt(item.descuento);
-     else {
-       // Si es Debe viejo sin tarifa, congelar con 5 y 10
-       const esTrans=(item.tipo||'').toLowerCase().includes('trans');
-       item.tarifaCongelada = esTrans?TARIFA_DEFAULT_TRANSPORTE:TARIFA_DEFAULT_MANDADO;
-     }
-     // Guardar en Firebase para que no vuelva a cambiar
-     db.ref('ventas/'+item.id).update({tarifaCongelada: item.tarifaCongelada});
-   }
- });
-
+ let lista=Object.entries(val).map(([id,d])=>({id,...d}));
+ if(lista.length===0){ ventas=[]; filtradas=[]; render(); return; }
  lista.sort((a,b)=>{
    const fa=a.fecha||''; const fb=b.fecha||'';
    if(fa!==fb) return fa.localeCompare(fb);
@@ -119,20 +110,9 @@ db.ref('ventas').on('value', snap=>{
  });
  lista.forEach((item, idx)=>{ item.numeroSecuencial = idx+1; });
  ventas = [...lista].reverse();
- 
- // Para pedidos NUEVOS que llegan sin tarifaCongelada, asignar tarifa ACTUAL del repartidor
- ventas.forEach(item=>{
-   if(item.tarifaCongelada==null){
-     const tarifaActual = getTarifaActualRepartidor(item.repartidor, item.tipo);
-     db.ref('ventas/'+item.id).update({tarifaCongelada: tarifaActual});
-     item.tarifaCongelada = tarifaActual;
-   }
- });
-
  if(primeraCarga){
    filtradas=[...ventas];
    primeraCarga=false;
-   render();
  }else{
    const ini=fIni.value, fin=fFin.value, mes=fMes.value, bus=fBuscar.value.toLowerCase().trim();
    filtradas=ventas.filter(v2=>{
@@ -141,10 +121,9 @@ db.ref('ventas').on('value', snap=>{
     if(ini && v2.fecha < ini) return false; if(fin && v2.fecha > fin) return false; return true;
    });
    pagina=prevPag;
-   render();
-   document.getElementById('wrapTabla').scrollLeft=scrollLeft;
-   window.scrollTo(0,scrollY);
  }
+ render();
+ setTimeout(()=>{ const w=document.getElementById('wrapTabla'); if(w) w.scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },20);
 });
 
 function aplicarFiltros(){
@@ -161,27 +140,35 @@ function formatFecha(f){ if(!f) return ''; if(f.includes('-')){const [y,m,d]=f.s
 function togglePago(id){
  const v=ventas.find(x=>x.id===id); if(!v) return;
  const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
- const cobro = v.tarifaCongelada!=null ? v.tarifaCongelada : getTarifaActualRepartidor(v.repartidor, v.tipo);
+ const cobro = getTarifaCongelada(v);
  const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
  const scrollY = window.scrollY;
  if(isSi){
-   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', total:0}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
+   db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', total:0});
  }else{
-   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', pago:cobro, descuento:cobro, total:cobro, tarifaCongelada:cobro}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
+   // Al pagar, congelamos la tarifa para que no cambie nunca más
+   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', pago:cobro, descuento:cobro, total:cobro, tarifaCongelada:cobro});
  }
+ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },50);
 }
 
 function render(){
- const tbody=document.getElementById('tbody'); tbody.innerHTML='';
+ const tbody=document.getElementById('tbody');
+ if(!tbody) return;
+ tbody.innerHTML='';
  const slice=filtradas.slice((pagina-1)*porPag, pagina*porPag);
- totalPed.innerText=`Total: ${filtradas.length} pedidos`;
- footerInfo.innerText=`Mostrando ${slice.length} de ${filtradas.length}`;
- pagNum.innerText=pagina;
+ document.getElementById('totalPed').innerText=`Total: ${filtradas.length} pedidos`;
+ document.getElementById('footerInfo').innerText=`Mostrando ${slice.length} de ${filtradas.length}`;
+ document.getElementById('pagNum').innerText=pagina;
+ if(slice.length===0){
+   tbody.innerHTML=`<tr><td colspan="11" style="text-align:center;padding:20px;color:#9ca3af">No hay pedidos</td></tr>`;
+   return;
+ }
  slice.forEach(v=>{
   const esTrans=(v.tipo||'').toLowerCase().includes('trans');
   const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
   const valorServicio=parseFloat(v.precio||v.valor||0);
-  const cobro = v.tarifaCongelada!=null ? v.tarifaCongelada : getTarifaActualRepartidor(v.repartidor, v.tipo);
+  const cobro = getTarifaCongelada(v);
   const totalMostrar=isSi?cobro:0;
   const tr=document.createElement('tr');
   tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valorServicio.toFixed(0)}</td><td style="font-weight:800;color:#E10600">$${cobro.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
@@ -196,7 +183,7 @@ function guardarEdicion(){
  const isSi=ePagado.value==='si';
  const tipo=eTipo.value;
  const vOld=ventas.find(x=>x.id===editId);
- const cobro = vOld.tarifaCongelada!=null ? vOld.tarifaCongelada : getTarifaActualRepartidor(eRepa.value, tipo);
+ const cobro = vOld.tarifaCongelada!=null? vOld.tarifaCongelada : getTarifaCongelada(vOld);
  const valor=parseFloat(eValor.value||0);
  const tot=isSi?cobro:0;
  db.ref('ventas/'+editId).update({cliente:eCliente.value,tipo:tipo,repartidor:eRepa.value,precio:valor,total:tot,yaPago:isSi,estado:isSi?'Pagado':'Debe',tarifaCongelada:cobro}).then(()=>cerrarModal());
