@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Kigo Xpress - Login</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f7f7f7;display:flex;align-items:center;justify-content:center;font-family:system-ui}
+.card{width:100%;max-width:380px;background:#fff;border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.15);padding:30px 26px;text-align:center}
+.logo{font-size:52px;font-family:'Segoe Script',cursive;line-height:1;margin:10px 0}
+.logo b{color:#111}
+.logo span{color:#e11d2a}
+.sub{letter-spacing:3px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:30px}
+.sub:before,.sub:after{content:'';width:24px;height:2px;background:#e11d2a}
+.input{background:#f2f3f7;border-radius:20px;padding:14px 18px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.input input{border:none;outline:none;background:transparent;flex:1;font-size:15px}
+.line{width:1px;height:20px;background:#d1d5db}
+.btn{width:100%;background:#e11d2a;color:#fff;border:none;border-radius:999px;padding:15px;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;box-shadow:0 10px 20px rgba(225,29,42,.3)}
+.btn-line{width:1px;height:20px;background:rgba(255,255,255,.6)}
+.msg{color:#dc2626;font-size:13px;margin-top:12px;display:none}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo"><b>Kigo <span>X</span>press</b></div>
+<div class="sub">LA SOLUCIÓN A TU ALCANCE</div>
+<div class="input"><span>👤</span><div class="line"></div><input id="usuario" placeholder="Usuario"></div>
+<div class="input"><span>🔒</span><div class="line"></div><input id="password" type="password" placeholder="Contraseña"><span style="cursor:pointer" onclick="document.getElementById('password').type=document.getElementById('password').type=='password'?'text':'password'">👁️</span></div>
+<button class="btn" onclick="ingresar()"><span>→</span><div class="btn-line"></div> Ingresar</button>
+<div id="msg" class="msg"></div>
+</div>
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+db.ref('usuarios').once('value').then(s=>{
+ if(!s.exists()){
+  db.ref('usuarios').set({
+   admin:{usuario:'admin',password:'1234',rol:'admin',nombre:'Administrador'},
+   repartidor:{usuario:'repartidor',password:'1234',rol:'repartidor',nombre:'Repartidor Demo'}
+  });
+ }
+});
+function showMsg(t){document.getElementById('msg').innerText=t;document.getElementById('msg').style.display='block';}
+function ingresar(){
+ var u=document.getElementById('usuario').value.trim();
+ var p=document.getElementById('password').value.trim();
+ if(!u||!p){showMsg('Ingresa usuario y contraseña');return;}
+ if(u.toLowerCase()=='admin' && p=='1234'){
+  localStorage.setItem('kigo_rol','admin');localStorage.setItem('kigo_user','admin');location.href='login/admin.html';return;
+ }
+ db.ref('usuarios').once('value').then(s=>{
+  var users=s.val()||{};
+  var found=Object.values(users).find(x=>x.usuario.toLowerCase()==u.toLowerCase() && x.password==p);
+  if(found){
+   localStorage.setItem('kigo_rol',found.rol);localStorage.setItem('kigo_user',found.usuario);localStorage.setItem('kigo_nombre',found.nombre);
+   if(found.rol=='admin') location.href='login/admin.html'; else location.href='login/repartidor.html?user='+encodeURIComponent(found.usuario);return;
+  }
+  db.ref('repartidores').once('value').then(s2=>{
+   var reps=s2.val()||{};var rf=Object.values(reps).find(r=>r.nombre.toLowerCase()==u.toLowerCase());
+   if(rf && p=='1234'){localStorage.setItem('kigo_rol','repartidor');localStorage.setItem('kigo_user',rf.nombre);localStorage.setItem('kigo_nombre',rf.nombre);location.href='login/repartidor.html?user='+encodeURIComponent(rf.nombre);return;}
+   showMsg('Usuario o contraseña incorrectos');
+  });
+ });
+}
+</script>
+</body>
+</html>
