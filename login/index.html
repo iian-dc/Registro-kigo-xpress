@@ -49,18 +49,18 @@ function ingresar(){
  var p=document.getElementById('password').value.trim();
  if(!u||!p){showMsg('Ingresa usuario y contraseña');return;}
  if(u.toLowerCase()=='admin' && p=='1234'){
-  localStorage.setItem('kigo_rol','admin');localStorage.setItem('kigo_user','admin');location.href='login/admin.html';return;
+  localStorage.setItem('kigo_rol','admin');localStorage.setItem('kigo_user','admin');location.href='admin.html';return;
  }
  db.ref('usuarios').once('value').then(s=>{
   var users=s.val()||{};
   var found=Object.values(users).find(x=>x.usuario.toLowerCase()==u.toLowerCase() && x.password==p);
   if(found){
    localStorage.setItem('kigo_rol',found.rol);localStorage.setItem('kigo_user',found.usuario);localStorage.setItem('kigo_nombre',found.nombre);
-   if(found.rol=='admin') location.href='login/admin.html'; else location.href='login/repartidor.html?user='+encodeURIComponent(found.usuario);return;
+   if(found.rol=='admin') location.href='admin.html'; else location.href='repartidor.html?user='+encodeURIComponent(found.usuario);return;
   }
   db.ref('repartidores').once('value').then(s2=>{
    var reps=s2.val()||{};var rf=Object.values(reps).find(r=>r.nombre.toLowerCase()==u.toLowerCase());
-   if(rf && p=='1234'){localStorage.setItem('kigo_rol','repartidor');localStorage.setItem('kigo_user',rf.nombre);localStorage.setItem('kigo_nombre',rf.nombre);location.href='login/repartidor.html?user='+encodeURIComponent(rf.nombre);return;}
+   if(rf && p=='1234'){localStorage.setItem('kigo_rol','repartidor');localStorage.setItem('kigo_user',rf.nombre);localStorage.setItem('kigo_nombre',rf.nombre);location.href='repartidor.html?user='+encodeURIComponent(rf.nombre);return;}
    showMsg('Usuario o contraseña incorrectos');
   });
  });
