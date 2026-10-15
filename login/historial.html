@@ -46,12 +46,12 @@ body{background:#f5f5f5;zoom:0.88}
 <body>
 <div class="top"><div style="display:flex;gap:10px;align-items:center"><button class="btn-x" onclick="location.href='admin.html'">✕</button><div><div class="logo-text">Kigo <span class="red">X</span>press</div><div class="logo-sub">LA SOLUCIÓN A TU ALCANCE</div></div></div><div class="total-ped" id="totalPed">Total: 0</div></div>
 <div class="main">
-<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Orden por fecha - más reciente arriba - precio vinculado a repartidor</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
+<div class="head-sec"><div><h1 style="font-size:14px;font-weight:800">Historial de pedidos</h1><p style="font-size:11px;color:#6b7280">Valor = servicio | Pago = lo que te paga el repartidor</p></div><button class="btn-buscar" style="background:#fff;color:#111;border:1px solid #e5e7eb" onclick="location.reload()">Actualizar</button></div>
 <div class="filters"><div class="inp-f"><input type="date" id="fIni"><input type="date" id="fFin" style="margin-left:4px;border-left:1px solid #eee;padding-left:6px"></div><div class="inp-f"><select id="fMes"><option value="">Mes</option><option value="1">Enero</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dic</option></select></div><div class="search-box"><input id="fBuscar" placeholder="Buscar aliado..."></div><button class="btn-buscar" onclick="aplicarFiltros()">Buscar</button></div>
 <div class="aviso-slide">← Desliza para ver más →</div>
 <div class="table-wrap" id="wrapTabla"><table class="table"><thead><tr><th>Fecha</th><th>N° Pedido</th><th>Aliado</th><th>Servicio</th><th>Repartidor</th><th>Valor</th><th>Pago</th><th>Total</th><th>¿Ya pagó?</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tbody"></tbody></table><div class="footer-table"><span id="footerInfo">0 pedidos</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div></div>
 </div>
-<div id="modalEdit" class="modal-bg"><div class="modal"><h3>Editar</h3><input id="eCliente"><select id="eTipo"><option value="moto">Moto mandado</option><option value="transporte">Moto transporte</option></select><input id="eRepa"><input id="eValor" type="number" disabled style="background:#f9fafb;color:#6b7280"><small style="font-size:9px;color:#9ca3af;display:block;margin:-4px 0 8px 4px">* Valor viene automático del repartidor</small><select id="ePagado"><option value="si">Sí</option><option value="no">No</option></select><div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div></div></div>
+<div id="modalEdit" class="modal-bg"><div class="modal"><h3>Editar</h3><input id="eCliente"><select id="eTipo"><option value="moto">Moto mandado</option><option value="transporte">Moto transporte</option></select><input id="eRepa"><input id="eValor" type="number"><select id="ePagado"><option value="si">Sí</option><option value="no">No</option></select><div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div></div></div>
 <script>
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
@@ -59,18 +59,7 @@ const db = firebase.database();
 let ventas=[], filtradas=[], pagina=1, porPag=30, editId=null, primeraCarga=true;
 let repartidoresMap={};
 
-function getPagoPorTipo(tipo){ const t=(tipo||'').toLowerCase(); return t.includes('trans')?10:5; }
-
-function getValorRepartidor(nombreRepa, tipo){
-  const key=(nombreRepa||'').toLowerCase().trim();
-  const rep=repartidoresMap[key];
-  if(!rep) return 0;
-  const esTrans=(tipo||'').toLowerCase().includes('trans');
-  if(esTrans) return parseInt(rep.precioTransporte||rep.precioTrans||60);
-  return parseInt(rep.precioMandado||40);
-}
-
-// ESCUCHA REPARTIDORES EN TIEMPO REAL
+// LEER TARIFAS DE REPARTIDORES EN TIEMPO REAL
 db.ref('repartidores').on('value', snap=>{
   const v=snap.val()||{};
   repartidoresMap={};
@@ -80,6 +69,24 @@ db.ref('repartidores').on('value', snap=>{
   });
   render();
 });
+
+function getCobroRepartidor(nombreRepa, tipo){
+  const key=(nombreRepa||'').toLowerCase().trim();
+  const rep=repartidoresMap[key];
+  const esTrans=(tipo||'').toLowerCase().includes('trans');
+  if(rep){
+    if(esTrans){
+      if(rep.tarifaTransporte!=null) return parseInt(rep.tarifaTransporte);
+      if(rep.precioTransporte!=null) return parseInt(rep.precioTransporte);
+      if(rep.cobroTransporte!=null) return parseInt(rep.cobroTransporte);
+    }else{
+      if(rep.tarifaMandado!=null) return parseInt(rep.tarifaMandado);
+      if(rep.precioMandado!=null) return parseInt(rep.precioMandado);
+      if(rep.cobroMandado!=null) return parseInt(rep.cobroMandado);
+    }
+  }
+  return esTrans?10:5;
+}
 
 db.ref('ventas').on('value', snap=>{
  const v=snap.val()||{};
@@ -126,14 +133,13 @@ function formatFecha(f){ if(!f) return ''; if(f.includes('-')){const [y,m,d]=f.s
 function togglePago(id){
  const v=ventas.find(x=>x.id===id); if(!v) return;
  const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
- const pagoFijo=getPagoPorTipo(v.tipo);
- const valorReal=getValorRepartidor(v.repartidor, v.tipo);
+ const cobro=getCobroRepartidor(v.repartidor, v.tipo);
  const scrollLeft = document.getElementById('wrapTabla').scrollLeft;
  const scrollY = window.scrollY;
  if(isSi){
    db.ref('ventas/'+id).update({yaPago:false, estado:'Debe', descuento:0, total:0, pago:0}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }else{
-   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:pagoFijo, total:pagoFijo, pago:pagoFijo, precio:valorReal}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
+   db.ref('ventas/'+id).update({yaPago:true, estado:'Pagado', descuento:cobro, total:cobro, pago:cobro}).then(()=>{ setTimeout(()=>{ document.getElementById('wrapTabla').scrollLeft=scrollLeft; window.scrollTo(0,scrollY); },30); });
  }
 }
 
@@ -146,37 +152,19 @@ function render(){
  slice.forEach(v=>{
   const esTrans=(v.tipo||'').toLowerCase().includes('trans');
   const isSi=v.yaPago===true || v.yaPago==='si' || v.yaPago==='Sí' || v.estado==='Pagado';
-  const valorReal=getValorRepartidor(v.repartidor, v.tipo) || parseFloat(v.precio||v.valor||0);
-  const pagoFijo=getPagoPorTipo(v.tipo);
-  const pagoMostrar=isSi?pagoFijo:0;
-  const totalMostrar=isSi?pagoFijo:0;
+  const valorServicio=parseFloat(v.precio||v.valor||0);
+  const cobroRepa=getCobroRepartidor(v.repartidor, v.tipo);
+  const pagoMostrar=cobroRepa;
+  const totalMostrar=isSi?cobroRepa:0;
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td style="font-weight:800">$${valorReal.toFixed(0)}</td><td>$${pagoMostrar.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
+  tr.innerHTML=`<td>${formatFecha(v.fecha)}</td><td style="font-weight:800">#${v.numeroSecuencial||''}</td><td>${v.cliente||'-'}</td><td><span class="${esTrans?'badge-trans':'badge-moto'} badge-serv">${esTrans?'Transporte':'Mandado'}</span></td><td>${v.repartidor||'-'}</td><td>$${valorServicio.toFixed(0)}</td><td style="font-weight:800;color:#E10600">$${pagoMostrar.toFixed(0)}</td><td style="font-weight:800">$${totalMostrar.toFixed(0)}</td><td><button class="badge-pago ${isSi?'badge-pago-si':'badge-pago-no'}" onclick="togglePago('${v.id}')">${isSi?'✓ Sí':'✕ No'}</button></td><td><span class="badge-estado ${isSi?'pagado':'debe'}">${isSi?'Pagado':'Debe'}</span></td><td><div class="act"><button class="btn-act btn-edit" onclick="editar('${v.id}')">✎</button><button class="btn-act btn-del" onclick="eliminar('${v.id}')">🗑</button></div></td>`;
   tbody.appendChild(tr);
  });
 }
 function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtradas.length/porPag)); pagina=Math.min(max,Math.max(1,pagina+d)); render(); window.scrollTo(0,0); }
-function editar(id){
- const v=ventas.find(x=>x.id===id); if(!v) return;
- editId=id;
- eCliente.value=v.cliente||'';
- eTipo.value=(v.tipo||'').includes('trans')?'transporte':'moto';
- eRepa.value=v.repartidor||'';
- eValor.value=getValorRepartidor(v.repartidor, v.tipo) || v.precio||0;
- ePagado.value=(v.yaPago===true||v.estado==='Pagado')?'si':'no';
- modalEdit.classList.add('open');
-}
+function editar(id){ const v=ventas.find(x=>x.id===id); if(!v) return; editId=id; eCliente.value=v.cliente||''; eTipo.value=(v.tipo||'').includes('trans')?'transporte':'moto'; eRepa.value=v.repartidor||''; eValor.value=v.precio||0; ePagado.value=(v.yaPago===true||v.estado==='Pagado')?'si':'no'; modalEdit.classList.add('open'); }
 function cerrarModal(){modalEdit.classList.remove('open'); editId=null;}
-function guardarEdicion(){
- if(!editId) return;
- const isSi=ePagado.value==='si';
- const tipo=eTipo.value;
- const pagoFijo=getPagoPorTipo(tipo);
- const valorReal=getValorRepartidor(eRepa.value, tipo);
- const pago=isSi?pagoFijo:0;
- const tot=isSi?pagoFijo:0;
- db.ref('ventas/'+editId).update({cliente:eCliente.value,tipo:tipo,repartidor:eRepa.value,precio:valorReal,descuento:pago,total:tot,pago:pago,yaPago:isSi,estado:isSi?'Pagado':'Debe'}).then(()=>cerrarModal());
-}
+function guardarEdicion(){ if(!editId) return; const isSi=ePagado.value==='si'; const tipo=eTipo.value; const cobro=getCobroRepartidor(eRepa.value, tipo); const valor=parseFloat(eValor.value||0); const pago=isSi?cobro:0; const tot=isSi?cobro:0; db.ref('ventas/'+editId).update({cliente:eCliente.value,tipo:tipo,repartidor:eRepa.value,precio:valor,descuento:pago,total:tot,pago:pago,yaPago:isSi,estado:isSi?'Pagado':'Debe'}).then(()=>cerrarModal()); }
 function eliminar(id){ if(confirm('¿Eliminar?')) db.ref('ventas/'+id).remove(); }
 fBuscar.addEventListener('keyup',e=>{if(e.key==='Enter') aplicarFiltros();});
 </script>
