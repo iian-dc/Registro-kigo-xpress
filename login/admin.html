@@ -251,3 +251,73 @@ function selCli(n){
 document.getElementById('cliente').value=n;
 document.getElementById('sugBox').style.display='none';
 }
+function aplicarFiltros(){
+let lista=[...ventasCache];
+const q=(document.getElementById('buscarCliente').value||'').toLowerCase();
+const rep=document.getElementById('filtroRepartidor').value;
+const fe=document.getElementById('filtroFechaExacta').value;
+if(q) lista=lista.filter(v=>v.cliente.toLowerCase().includes(q));
+if(rep) lista=lista.filter(v=>v.repartidor===rep);
+if(fe) lista=lista.filter(v=>v.fecha===fe);
+document.getElementById('tbodyVentas').innerHTML=lista.slice(0,100).map(v=>`
+<div style="padding:10px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between">
+<div><b>${v.cliente}</b><br><small>${v.fecha} • ${v.pedido} • $${v.total}</small></div>
+<div><small style="color:#e11d2a;font-weight:700">${v.estado}</small></div>
+</div>`).join('')||'<div style="color:#999;text-align:center;padding:20px">Sin ventas</div>';
+}
+
+function renderReps(){
+const c=document.getElementById('listaRepsImagen');
+c.innerHTML=Object.values(repartidoresDB).map(r=>`<div style="padding:10px 0;border-bottom:1px solid #eee">${r.nombre} - ${r.telefono||''}</div>`).join('')||'Sin repartidores';
+}
+
+function renderPresu(){
+if(!document.getElementById('presuFecha').value) document.getElementById('presuFecha').value=new Date().toISOString().split('T')[0];
+const fecha=document.getElementById('presuFecha').value;
+const rep=document.getElementById('presuRepSelect').value;
+let lista=ventasCache.filter(v=>v.fecha===fecha);
+if(rep!=='TODOS') lista=lista.filter(v=>v.repartidor===rep);
+const pag=lista.filter(v=>v.estado==='Pagado').reduce((a,b)=>a+(b.pagaKigoBase||0),0);
+const deb=lista.filter(v=>v.estado==='Debe').reduce((a,b)=>a+(b.pagaKigoBase||0),0);
+document.getElementById('presuIngTot').innerText='$'+pag;
+document.getElementById('presuPorCobrar').innerText='$'+deb;
+document.getElementById('presuBalance').innerText='$'+(pag+deb);
+document.getElementById('tbodyPresu').innerHTML=lista.map(v=>`<div style="padding:8px 0;border-bottom:1px solid #eee">${v.repartidor} - $${v.pagaKigoBase} - ${v.estado}</div>`).join('')||'Sin datos';
+}
+
+function registrarVenta(){
+let cliente=document.getElementById('cliente').value.trim();
+let fecha=document.getElementById('fechaVenta').value;
+let precio=parseFloat(document.getElementById('precio').value)||0;
+let repartidor=document.getElementById('repartidor').value;
+let total=calcTotal();
+if(!cliente||!fecha||precio<=0){ alert('Completa datos'); return; }
+let tarifa=getTarifa(repartidor, tipoActual);
+let paga=tarifa!==null?tarifa:5;
+const data={
+cliente,
+tipo:tipoActual,
+precio,
+descuento:parseFloat(document.getElementById('descuento').value)||0,
+total,
+pagaKigo:paga,
+pagaKigoBase:paga,
+ganancia:total-paga,
+repartidor,
+fecha,
+timestamp:Date.now(),
+estado:'Pagado',
+pedido:'#'+Math.floor(1000+Math.random()*9000)
+};
+db.ref('ventas').push(data).then(()=>{
+document.getElementById('overlayExito').style.display='flex';
+setTimeout(()=>document.getElementById('overlayExito').style.display='none',2000);
+document.getElementById('cliente').value='';
+document.getElementById('precio').value='';
+document.getElementById('descuento').value='';
+document.getElementById('totalTxt').innerText='$ 0.00';
+});
+}
+</script>
+</body>
+</html>
