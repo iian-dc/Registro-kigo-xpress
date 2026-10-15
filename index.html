@@ -167,3 +167,108 @@ td{padding:10px 12px;font-size:13px;border-top:1px solid #f0f0f0;vertical-align:
  .cal-day-ing{font-size:7px}
  .cal-btn{padding:6px 10px;font-size:10px}
 }
+</style>
+</head>
+<body>
+<div id="overlayExito"><div class="card-modal" style="text-align:center"><div style="width:64px;height:64px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="check" style="width:32px;height:32px;color:#0a9a4a"></i></div><div style="font-weight:900;font-size:20px">¡Registro Exitoso!</div><div style="font-size:13px;color:#6b7280;margin-top:6px">Venta guardada en Historial</div></div></div>
+<div id="overlayEdit"><div class="card-modal"><div style="font-weight:900;font-size:18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span>Editar Pedido</span><button onclick="cerrarEdit()" style="border:none;background:#f3f4f6;width:28px;height:28px;border-radius:50%;font-weight:800;cursor:pointer">x</button></div>
+<div class="label">Número Pedido</div><input id="ePedido" class="input" style="padding-right:14px"><div class="label">Nombre Cliente</div><input id="eCliente" class="input" style="padding-right:14px"><div class="label">Fecha</div><input id="eFecha" type="date" class="input" style="padding-right:14px"><div class="label">Repartidor</div><input id="eRep" class="input" style="padding-right:14px"><div class="label">Tipo Servicio</div><select id="eTipo" class="input" style="padding-right:14px"><option value="moto">Moto Mandado</option><option value="transporte">Transporte</option></select><div class="label">Precio / Total</div><input id="eTotal" type="number" class="input" style="padding-right:14px"><div style="display:flex;gap:8px;margin-top:16px"><button class="btn-no" onclick="guardarEdit()">Guardar</button><button class="btn-si" onclick="cerrarEdit()" style="background:#6b7280">Cancelar</button></div></div></div>
+<div id="overlayDel"><div class="card-modal" style="text-align:center"><div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="trash-2" style="width:28px;color:#dc2626"></i></div><div style="font-weight:900;font-size:18px">¿Deseas confirmar la eliminación de este pedido?</div><div style="font-size:12px;color:#6b7280;margin-top:6px">Esta acción no se puede deshacer</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn-si" onclick="confirmarDel()">Sí</button><button class="btn-no" onclick="cerrarDel()">No</button></div></div></div>
+<div id="overlayCliEdit"><div class="card-modal"><div style="font-weight:900;font-size:18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span>Editar Cliente</span><button onclick="cerrarCliEdit()" style="border:none;background:#f3f4f6;width:28px;height:28px;border-radius:50%;font-weight:800;cursor:pointer">x</button></div>
+<div class="label">Nombre / Empresa</div><input id="ceNombre" class="input" style="padding-right:14px"><div class="label">Dirección</div><input id="ceDir" class="input" style="padding-right:14px"><div class="label">Teléfono</div><input id="ceTel" class="input" style="padding-right:14px"><div style="display:flex;gap:8px;margin-top:16px"><button class="btn-no" onclick="guardarCliEdit()">Guardar</button><button class="btn-si" onclick="cerrarCliEdit()" style="background:#6b7280">Cancelar</button></div></div></div>
+<div id="overlayCliDel"><div class="card-modal" style="text-align:center"><div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="trash-2" style="width:28px;color:#dc2626"></i></div><div style="font-weight:900;font-size:18px">¿Deseas eliminar este cliente?</div><div style="font-size:12px;color:#6b7280;margin-top:6px" id="cliDelName">Esta acción no se puede deshacer</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn-si" onclick="confirmarCliDel()">Sí</button><button class="btn-no" onclick="cerrarCliDel()">No</button></div></div></div>
+<div id="overlayRepEdit"><div class="card-modal"><div style="font-weight:900;font-size:18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><span id="repEditTitle">Editar Repartidor</span><button onclick="cerrarRepEdit()" style="border:none;background:#f3f4f6;width:28px;height:28px;border-radius:50%;font-weight:800;cursor:pointer">x</button></div>
+<div class="label">Foto Repartidor (desde celular)</div><input id="reFoto" type="file" accept="image/*" capture="environment" class="input" style="padding:8px" onchange="previewFoto(this,'editPreview')"><img id="editPreview" class="foto-preview">
+<div class="label">Nombre</div><input id="reNombre" class="input" style="padding-right:14px">
+<div class="label">Teléfono</div><input id="reTel" class="input" style="padding-right:14px">
+<div class="label">Moto</div><input id="reMoto" class="input" placeholder="Ej: Honda CB125" style="padding-right:14px">
+<div class="label">Estado</div><select id="reEstado" class="input" style="padding-right:14px"><option value="Disponible">Disponible</option><option value="Inactivo">Inactivo</option></select>
+<div class="label">Tarifa Mandado (lo que te paga)</div><input id="reTarifaM" type="number" class="input" style="padding-right:14px" value="5">
+<div class="label">Tarifa Transporte (lo que te paga)</div><input id="reTarifaT" type="number" class="input" style="padding-right:14px" value="80">
+<div style="display:flex;gap:8px;margin-top:16px"><button class="btn-no" onclick="guardarRepEdit()">Guardar</button><button class="btn-si" onclick="cerrarRepEdit()" style="background:#6b7280">Cancelar</button></div>
+</div></div>
+<div id="overlayRepDel"><div class="card-modal" style="text-align:center"><div style="width:64px;height:64px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="trash-2" style="width:28px;color:#dc2626"></i></div><div style="font-weight:900;font-size:18px">¿Deseas eliminar este repartidor?</div><div style="font-size:12px;color:#6b7280;margin-top:6px" id="repDelName">Esta acción no se puede deshacer</div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn-si" onclick="confirmarRepDel()">Sí</button><button class="btn-no" onclick="cerrarRepDel()">No</button></div></div></div>
+
+<div class="app">
+<div id="vistaRegistro" class="card">
+<div class="top-line"><span id="fechaTop"></span><span style="display:flex;align-items:center;gap:4px"><i data-lucide="sun" style="width:14px;height:14px;color:#f59e0b"></i> 24°C</span></div>
+<div class="title">Registro de Venta</div>
+<div class="label">Nombre del Cliente</div>
+<div class="input-wrap" style="flex-direction:column;align-items:stretch">
+<div style="position:relative;width:100%;display:flex;align-items:center">
+<input id="cliente" class="input" placeholder="Ej: Juan Pérez" oninput="calcTotal(); filtrarSugerencias(this.value)" autocomplete="off">
+<button class="btn-x" onclick="clearInput('cliente'); ocultarSugerencias()">x</button>
+</div>
+<div id="sugerenciasClientes" class="suggest-box"></div>
+</div>
+<div class="label">Fecha</div><div class="input-wrap"><input id="fechaVenta" type="date" class="input"><button class="btn-x" onclick="resetFechaHoy()">x</button></div>
+<div class="label">Tipo de Servicio</div><div class="tipo-box"><button id="btnMoto" class="tipo active" onclick="setTipo('moto')"><i data-lucide="bike" style="width:18px"></i> Moto Mandado</button><button id="btnTrans" class="tipo" onclick="setTipo('transporte')"><i data-lucide="car" style="width:18px"></i> Transporte</button></div>
+<div class="label">Precio</div><div class="input-wrap"><input id="precio" type="number" class="input" placeholder="$ 0.00" oninput="calcTotal()"><button class="btn-x" onclick="clearInput('precio')">x</button></div>
+<div class="label">Repartidor</div><div class="input-wrap"><select id="repartidor" class="input"><option value="">Seleccionar repartidor</option></select><button class="btn-x" onclick="clearInput('repartidor')">x</button></div>
+<div class="label">Descuento</div><div class="input-wrap"><input id="descuento" type="number" class="input" placeholder="$ 0.00 (opcional)" oninput="calcTotal()"><button class="btn-x" onclick="clearInput('descuento')">x</button></div>
+<div class="total-box"><span>Total</span><span id="totalTxt" style="font-size:28px;font-weight:900;color:#0a7a2e">$ 0.00</span></div>
+<button class="btn-reg" onclick="registrarVenta()"><i data-lucide="check" style="width:20px"></i> Registrar Venta</button>
+</div>
+
+<div id="vistaHistorial" class="card" style="display:none">
+<div class="title-h">Historial de Ventas</div>
+<div class="sub-h">Historial de pedidos y pagos • <span id="mesTitulo">Todos - 507 servicios</span></div>
+<div class="filtros-top"><button class="filtro-tab active" onclick="filtrarTiempo('todos')" id="fTodos">Todos (507)</button><button class="filtro-tab" onclick="filtrarTiempo('ayer')" id="fAyer">Ayer</button><button class="filtro-tab" onclick="filtrarTiempo('semana')" id="fSemana">Esta Semana</button><button class="filtro-tab" onclick="filtrarTiempo('mes')" id="fMes">Este Mes</button><button class="filtro-tab" onclick="toggleMeses()" id="fBusMes">Búsqueda por Mes</button></div>
+<div id="bloqueMeses" style="display:none"><div class="meses-title"><i data-lucide="calendar" style="width:14px"></i> MESES DE 2026</div><div class="meses-box" id="mesesBox"></div></div>
+<div class="barra-filtros"><div class="search-input"><i data-lucide="search" style="width:16px"></i><input id="buscarCliente" placeholder="Buscar por Cliente" oninput="aplicarFiltros()"></div><div class="search-input"><i data-lucide="users" style="width:16px"></i><select id="filtroRepartidor" onchange="aplicarFiltros()"><option value="">Filtrar por Repartidor</option></select></div><div class="search-input"><i data-lucide="calendar" style="width:16px"></i><select id="filtroMesAnio"><option>Todos</option></select></div><div class="search-input"><i data-lucide="calendar-days" style="width:16px"></i><input id="filtroFechaExacta" type="date" onchange="aplicarFiltros()"></div><button class="btn-limpiar" onclick="limpiarFiltros()"><i data-lucide="plus-circle" style="width:16px"></i> Limpiar filtros</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px"><div style="font-weight:800">Órdenes (<span id="countOrdenes">0</span>)</div><div style="font-size:12px;color:#666">Ordenado por: <b style="color:#0a7a2e">Más reciente</b></div></div>
+<div class="tabla-wrap" id="tablaWrap"><table><thead><tr><th>PEDIDO</th><th>CLIENTE Y SERVICIO</th><th>REPARTIDOR</th><th>TOTAL</th><th>PAGA A KIGO</th><th>GANANCIA</th><th>ESTADO</th><th>ACCIONES</th></tr></thead><tbody id="tbodyVentas"></tbody></table></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:#666"><span id="mostrandoTxt">Mostrando 0 de 0 resultados</span><div style="display:flex;gap:6px"><button class="filtro-tab" style="padding:6px 10px" onclick="cambiarPag(-1)">‹ Anterior</button><button class="filtro-tab active" style="padding:6px 14px" id="pagActual">1</button><button class="filtro-tab" style="padding:6px 10px" onclick="cambiarPag(1)">Siguiente ›</button></div></div>
+</div>
+
+<div id="vistaClientes" class="card" style="display:none;background:#f5f5f5;box-shadow:none">
+<div class="clientes-tabs">
+<button id="cTabListado" class="c-tab active" onclick="switchClientes('listado')"><i data-lucide="list-ordered" style="width:16px"></i> Listado de Clientes</button>
+<button id="cTabNuevo" class="c-tab" onclick="switchClientes('nuevo')"><i data-lucide="plus" style="width:16px"></i> Agregar Nuevo</button>
+<button id="cTabRanking" class="c-tab" onclick="switchClientes('ranking')"><i data-lucide="trophy" style="width:16px"></i> Ranking</button>
+</div>
+<div id="clientesListado">
+<div class="stats-clientes">
+<div class="stat-card"><div class="s-top"><i data-lucide="users" style="width:14px"></i> Total Clientes</div><div class="s-num" id="statTotalClientes">0</div><div class="s-sub">registrados</div></div>
+<div class="stat-card"><div class="s-top"><i data-lucide="calendar" style="width:14px"></i> Ingresos este mes</div><div class="s-num" style="font-size:18px;margin-top:8px" id="statMesNombre">Octubre</div><div class="s-num" id="statIngMes" style="font-size:22px">$0</div><div class="s-sub" id="statMesDetalle">0 pedidos</div></div>
+<div class="stat-card"><div class="s-top"><i data-lucide="wallet" style="width:14px"></i> Ingresos totales</div><div class="s-num" id="statIngTotal" style="font-size:22px">$0</div><div class="s-sub" id="statIngTotalSub">hasta hoy</div></div>
+</div>
+<div id="listaClientesImagen"></div>
+</div>
+<div id="clientesNuevo" style="display:none"><div class="card" style="margin:0"><div style="font-weight:900;font-size:18px;margin-bottom:12px">Agregar Nuevo Cliente</div><div class="label">Nombre / Empresa</div><input id="nCliNombre" class="input" placeholder="Ej: Ana García"><div class="label">Dirección</div><input id="nCliDir" class="input" placeholder="Ej: Av. Reforma 1280, CDMX"><div class="label">Teléfono</div><input id="nCliTel" class="input" placeholder="Ej: +52 55 2345 6789"><button class="btn-reg" onclick="guardarNuevoCliente()"><i data-lucide="save" style="width:16px"></i> Guardar Cliente</button></div></div>
+<div id="clientesRanking" style="display:none"><div class="card" style="margin:0"><div style="font-weight:900;font-size:16px;margin-bottom:10px">Ranking por Pedidos</div><div id="rankingLista"></div></div></div>
+</div>
+
+<div id="vistaPresupuesto" class="card" style="display:none;background:#f0f2f1;box-shadow:none">
+<div class="presu-header"><div class="presu-title">Presupuesto / Valoraciones</div><div style="font-size:11px;color:#6b7280" id="presuMesActual">Octubre 2026</div></div>
+<div class="presu-tabs">
+<button id="pTabDia" class="presu-tab active" onclick="switchPresu('dia')"><i data-lucide="calendar-days" style="width:16px"></i> Día</button>
+<button id="pTabMes" class="presu-tab" onclick="switchPresu('mes')"><i data-lucide="calendar-range" style="width:16px"></i> Mes</button>
+<button id="pTabCal" class="presu-tab" onclick="switchPresu('cal')"><i data-lucide="calendar" style="width:16px"></i> Calendario</button>
+</div>
+<div class="presu-stats">
+<div class="presu-stat"><div class="presu-stat-icon presu-icon-green"><i data-lucide="dollar-sign" style="width:20px"></i></div><div><div class="presu-stat-label">Estoy Ganando (Pagado)</div><div class="presu-stat-num" id="presuIngTot">$0</div><div class="presu-stat-sub" id="presuIngSub">lo que ya te pagaron</div></div></div>
+<div class="presu-stat"><div class="presu-stat-icon presu-icon-orange"><i data-lucide="credit-card" style="width:20px"></i></div><div style="flex:1"><div class="presu-stat-label" id="presuCobrarLabel">Me Deben</div><div class="presu-stat-num" id="presuPorCobrar">$0</div><div class="presu-stat-sub" id="presuCobrarSub">por cobrar</div></div></div>
+<div class="presu-stat"><div class="presu-stat-icon presu-icon-green"><i data-lucide="scale" style="width:20px"></i></div><div><div class="presu-stat-label">Balance Total</div><div class="presu-stat-num" id="presuBalance">$0</div><div class="presu-stat-sub">Pagado + Por Cobrar</div></div></div>
+</div>
+<div style="background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<div style="font-weight:800;font-size:12px;color:#2d3a2e;display:flex;align-items:center;gap:6px"><i data-lucide="user-check" style="width:14px"></i> Repartidor:</div>
+<select id="presuRepSelect" class="presu-select" onchange="renderPresupuesto()">
+<option value="TODOS">Todos - Total General</option>
+</select>
+<div id="presuRepDetalle" style="font-size:11px;color:#6b7280;font-weight:600;margin-left:auto"></div>
+</div>
+<div class="presu-detalle" id="presuDiaView">
+<div class="presu-detalle-head"><div style="font-weight:900;font-size:16px;color:#2d3a2e">Detalle por Repartidor</div><div class="presu-filtro"><span style="font-size:11px;color:#6b7280">Fecha:</span><div class="presu-date"><i data-lucide="calendar-days" style="width:14px"></i><input id="presuFecha" type="date" style="border:none;outline:none;background:transparent;font-size:12px;font-weight:600" onchange="renderPresupuesto()"></div><button class="presu-date" style="cursor:pointer" onclick="hoyPresu()"><i data-lucide="calendar-check" style="width:14px"></i> Hoy</button></div></div>
+<div class="presu-table"><table><thead><tr><th>Repartidor</th><th>Pedidos</th><th>Total</th><th>Comisión Kigo</th><th>Debe / Pagado</th></tr></thead><tbody id="tbodyPresu"></tbody></table></div>
+<div style="font-size:11px;color:#6b7280;margin-top:10px" id="presuFooter">Mostrando 0 repartidores</div>
+</div>
+
+<div id="presuMesView" style="display:none"><div class="presu-detalle"><div class="cal-nav"><button class="cal-btn" onclick="cambiarMesPresu(-1)">‹ Anterior</button><div style="font-weight:900" id="presuMesTitulo">Octubre 2026</div><button class="cal-btn" onclick="cambiarMesPresu(1)">Siguiente ›</button></div><div id="presuMesLista"></div></div></div>
+
+<div id="presuCalView" style="display:none">
+<div class="cal-nav"><button class="cal-btn" onclick="cambiarMesPresu(-1)">‹</button><div style="text-align:center"><div style="font-weight:900;font-size:14px" id="calMesTitulo">Octubre 2026</div><div style="font-size:10px;color:#6b7280" id="calResumen">0 pedidos • $0</div></div><button class="cal-btn" onclick="cambiarMesPresu(1)">›</button></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px"><div class="cal-head">LUN</div><div class="cal-head">MAR</div><div class="cal-head">MIÉ</div><div class="cal-head">JUE</div><div class="cal-head">VIE</div><div class="cal-head">SÁB</div><div class="cal-head">DOM</div></div>
+<div id="presuCalGrid" class="cal-grid"></div>
+<div style="background:#fff;border-radius:10px;padding:10px;margin-top:10px;font-size:11px"><b>¿Qué ves aquí?</b> Cada cuadro es un día. Arriba pedidos, abajo ingresos Kigo. Desliza meses con ‹ › para ver todo el año. Verde = día con ventas.</div>
+</div>
