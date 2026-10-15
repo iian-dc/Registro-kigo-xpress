@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes - Kigo Xpress</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
+body{background:#f8f9fb;zoom:0.9}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f3;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.leftTop{display:flex;align-items:center;gap:12px}
+.btn-x{width:36px;height:36px;background:#E10600;border:none;color:#fff;border-radius:10px;font-weight:900;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.title h1{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
+.title p{font-size:11px;color:#6b7280;margin-top:2px}
+.searchTop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.searchBox{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:0 14px;height:40px;min-width:280px}
+.searchBox input{border:none;outline:none;font-size:12px;width:100%;background:transparent}
+.selectMes{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;height:40px;padding:0 12px;font-size:12px;font-weight:600}
+.selectMes select{border:none;outline:none;background:transparent;font-size:12px;font-weight:600}
+.container{padding:14px;display:grid;grid-template-columns:1fr 360px;gap:14px}
+@media(max-width:980px){.container{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #eef0f3;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden}
+.tabs{display:flex;gap:10px;margin-bottom:12px}
+.tab{flex:1;background:#fff;border:1px solid #eef0f3;border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:12px;cursor:pointer;position:relative}
+.tab.active{border-bottom:3px solid #E10600;color:#111}
+.tab.active::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:3px;background:#E10600;border-radius:999px}
+.tableWrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;min-width:800px}
+.table th{background:#111;color:#fff;padding:14px 12px;font-size:11px;font-weight:700;text-align:left;white-space:nowrap}
+.table th:first-child{border-top-left-radius:0}.table th:last-child{border-top-right-radius:0}
+.table td{padding:12px;font-size:12px;border-bottom:1px solid #f3f4f6;white-space:nowrap}
+.avatar{width:34px;height:34px;border-radius:50%;background:#f3f4f6;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.badge-estado{border-radius:999px;padding:5px 12px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.badge-estado.activo{background:#e6f9ee;color:#16a34a;border:1px solid #bbf7d0}
+.badge-estado.inactivo{background:#f3f4f6;color:#9ca3af;border:1px solid #e5e7eb}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.actions{display:flex;gap:6px}
+.btn-act{width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-act.del{background:#E10600;border-color:#E10600;color:#fff}
+.footerTable{padding:12px 14px;font-size:11px;color:#9ca3af;display:flex;justify-content:space-between;align-items:center}
+.pag{display:flex;gap:6px}.pag button{width:28px;height:28px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}.pag button.active{background:#E10600;color:#fff;border-color:#E10600}
+
+/* Ranking derecha */
+.rankingCard{padding:14px}
+.rankingHead{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.rankingHead h3{font-size:14px;font-weight:800}.rankingHead p{font-size:10px;color:#6b7280}
+.rankItem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f9fafb}
+.rankNum{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+.rankNum.gold{background:linear-gradient(#FFD700,#FFB700);color:#7a4d00;box-shadow:0 0 0 3px #fff7cc}
+.rankNum.silver{background:linear-gradient(#d1d5db,#9ca3af);color:#111}
+.rankNum.bronze{background:linear-gradient(#f0a15a,#CD7F32);color:#fff}
+.rankNum.normal{background:#eef2ff;color:#6b7280}
+.rankInfo{flex:1}
+.rankInfo b{font-size:12px;display:block}
+.rankBar{height:6px;background:#eef2f7;border-radius:999px;margin-top:6px;overflow:hidden}
+.rankBarFill{height:100%;background:#E10600;border-radius:999px}
+.rankPed{font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="leftTop">
+    <button class="btn-x" onclick="location.href='admin.html'">✕</button>
+    <div class="title">
+      <h1>👥 Clientes</h1>
+      <p>Gestiona tu base de clientes y revisa su historial de pedidos.</p>
+    </div>
+  </div>
+  <div class="searchTop">
+    <div class="searchBox">🔍 <input id="buscar" placeholder="Buscar cliente por nombre, teléfono o ID..."></div>
+    <div class="selectMes">📅 <select id="fMes"><option value="">Todos los meses</option><option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select></div>
+  </div>
+</div>
+
+<div style="padding:0 14px">
+<div class="tabs">
+  <div class="tab active" id="tabLista" onclick="cambiarTab('lista')">👥 Lista de clientes</div>
+  <div class="tab" id="tabRanking" onclick="cambiarTab('ranking')">⭐ Ranking de clientes</div>
+  <div class="tab" id="tabFrecuentes" onclick="cambiarTab('frecuentes')">📊 Clientes frecuentes</div>
+</div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="tableWrap">
+      <table class="table">
+        <thead><tr><th>#</th><th>Nombre del cliente</th><th>Teléfono</th><th>Total de pedidos</th><th>Último pedido</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="footerTable"><span id="footerInfo">Mostrando 0 de 0 clientes</span><div class="pag"><button onclick="cambiarPag(-1)">‹</button><button class="active" id="pagNum">1</button><button onclick="cambiarPag(1)">›</button></div></div>
+  </div>
+
+  <div class="card rankingCard">
+    <div class="rankingHead"><div style="font-size:24px">🏆</div><div><h3>Ranking de clientes</h3><p>Los clientes que más pedidos han realizado.</p></div></div>
+    <div id="rankingList"></div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+let clientes=[], filtrados=[], pagina=1, porPag=8, tab='lista';
+
+function formatFecha(f){ if(!f) return '-'; if(f.includes('-')){const [y,m,d]=f.split('-');return `${d}/${m}/${y}`;}return f;}
+
+db.ref('ventas').on('value', snap=>{
+  const v=snap.val()||{};
+  const map={};
+  Object.values(v).forEach(p=>{
+    const nombre=(p.cliente||'Sin nombre').trim();
+    const key=nombre.toLowerCase();
+    if(!map[key]) map[key]={nombre, telefono:p.telefono||'', total:0, ultimo:'', ultimoRaw:''};
+    map[key].total++;
+    if(p.telefono && !map[key].telefono) map[key].telefono=p.telefono;
+    if(!map[key].ultimoRaw || p.fecha>map[key].ultimoRaw){ map[key].ultimoRaw=p.fecha; map[key].ultimo=p.fecha; }
+  });
+  clientes=Object.values(map).map(c=>({...c, estado:c.total>=3?'Activo':'Activo'}));
+  clientes.sort((a,b)=>b.total-a.total);
+  aplicarFiltros();
+});
+
+db.ref('clientes').on('value', snap=>{
+  const vals=snap.val()||{};
+  const extras=Object.values(vals);
+  extras.forEach(ec=>{
+    const key=(ec.nombre||'').toLowerCase().trim();
+    const found=clientes.find(c=>c.nombre.toLowerCase().trim()===key);
+    if(found){ if(ec.telefono) found.telefono=ec.telefono; if(ec.estado) found.estado=ec.estado; }
+  });
+  render();
+});
+
+function cambiarTab(t){
+  tab=t;
+  document.getElementById('tabLista').classList.toggle('active',t==='lista');
+  document.getElementById('tabRanking').classList.toggle('active',t==='ranking');
+  document.getElementById('tabFrecuentes').classList.toggle('active',t==='frecuentes');
+  if(t==='ranking'){ filtrados=[...clientes].sort((a,b)=>b.total-a.total); }
+  else if(t==='frecuentes'){ filtrados=clientes.filter(c=>c.total>=5).sort((a,b)=>b.total-a.total); }
+  else { filtrados=[...clientes]; }
+  pagina=1;
+  render();
+}
+
+function aplicarFiltros(){
+  const q=document.getElementById('buscar').value.toLowerCase().trim();
+  const mes=document.getElementById('fMes').value;
+  let base=[...clientes];
+  if(tab==='ranking') base=base.sort((a,b)=>b.total-a.total);
+  if(tab==='frecuentes') base=base.filter(c=>c.total>=5);
+  filtrados=base.filter(c=>{
+    if(q && !`${c.nombre} ${c.telefono}`.toLowerCase().includes(q)) return false;
+    if(mes && c.ultimoRaw){ if(parseInt(c.ultimoRaw.split('-')[1])!==parseInt(mes)) return false; }
+    return true;
+  });
+  pagina=1;
+  render();
+}
+
+function render(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  const max=Math.max(1,Math.ceil(filtrados.length/porPag));
+  if(pagina>max) pagina=max;
+  const slice=filtrados.slice((pagina-1)*porPag, pagina*porPag);
+  const maxPed=Math.max(...clientes.map(c=>c.total),1);
+  
+  slice.forEach((c,i)=>{
+    const num=((pagina-1)*porPag+i+1).toString().padStart(2,'0');
+    const activo=c.estado!=='Inactivo';
+    tbody.innerHTML+=`<tr>
+      <td>${num}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">👤</div><b>${c.nombre}</b></div></td>
+      <td style="color:#6b7280">${c.telefono||'418 --- ----'}</td>
+      <td style="text-align:center;font-weight:700">${c.total}</td>
+      <td>${formatFecha(c.ultimo)}</td>
+      <td><span class="badge-estado ${activo?'activo':'inactivo'}"><span class="dot"></span> ${activo?'Activo':'Inactivo'}</span></td>
+      <td><div class="actions"><button class="btn-act">✎</button><button class="btn-act del">🗑</button></div></td>
+    </tr>`;
+  });
+  document.getElementById('footerInfo').innerText=`Mostrando ${slice.length} de ${filtrados.length} clientes`;
+  document.getElementById('pagNum').innerText=pagina;
+  
+  // Ranking derecha - siempre vinculado
+  const rankDiv=document.getElementById('rankingList');
+  rankDiv.innerHTML='';
+  const top=clientes.slice(0,8);
+  top.forEach((c,idx)=>{
+    let cls='normal'; let label=idx+1;
+    if(idx===0) cls='gold'; else if(idx===1) cls='silver'; else if(idx===2) cls='bronze';
+    const perc=Math.max(10, (c.total/maxPed)*100);
+    rankDiv.innerHTML+=`<div class="rankItem">
+      <div class="rankNum ${cls}">${idx<3?'':''}${idx===0?'1':idx===1?'2':idx===2?'3':idx+1}</div>
+      <div class="avatar" style="width:36px;height:36px">👤</div>
+      <div class="rankInfo"><b>${c.nombre}</b><div class="rankBar"><div class="rankBarFill" style="width:${perc}%"></div></div></div>
+      <div class="rankPed">🛒 ${c.total} pedidos</div>
+    </div>`;
+  });
+}
+
+function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtrados.length/porPag)); pagina=Math.min(max,Math.max(1,pagina+d)); render(); }
+document.getElementById('buscar').addEventListener('input',aplicarFiltros);
+document.getElementById('fMes').addEventListener('change',aplicarFiltros);
+</script>
+</body>
+  </html>
