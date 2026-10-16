@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Configuración - Kigo</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#fff;color:#111}
+.top{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:sticky;top:0;background:#fff;z-index:10;border-bottom:1px solid #f0f0f0}
+.hamb{width:30px;height:20px;display:flex;flex-direction:column;justify-content:space-between;border:none;background:transparent;padding:0;cursor:pointer}
+.hamb span{height:3px;background:#111;border-radius:3px;width:100%;display:block}
+.btn-cerrar{border:1.3px solid #e11d2a;border-radius:999px;padding:6px 12px;background:#fff;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:5px;cursor:pointer}
+.wrap{max-width:480px;margin:0 auto;padding:6px 18px 24px}
+.title{font-family:'Segoe Script','Brush Script MT',cursive;font-size:30px;font-weight:900;margin:6px 0 14px}
+.lbl{font-size:11px;font-weight:800;color:#6b7280;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.inp{width:100%;border:1.3px solid #e0e0e0;border-radius:999px;padding:12px 14px;font-size:13.5px;outline:none}
+.inp:focus{border-color:#e11d2a}
+.card{background:#fff;border:1px solid #f0f0f0;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.grid2{display:flex;gap:10px}
+.grid2>div{flex:1}
+.btn-save{width:100%;margin-top:12px;background:#e11d2a;color:#fff;border:none;border-radius:999px;padding:12px;font-weight:800;font-size:14px;cursor:pointer}
+.user-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.user-row:last-child{border:none}
+.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#eee}
+.badge{font-size:10px;font-weight:800;background:#111;color:#fff;padding:4px 8px;border-radius:999px}
+.small{font-size:11px;color:#6b7280}
+.menu-bg{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none;z-index:100}
+.menu-bg.open{display:block}
+.menu{position:fixed;left:0;top:0;bottom:0;width:280px;background:#fff;transform:translateX(-100%);transition:transform .28s;z-index:101;display:flex;flex-direction:column}
+.menu.open{transform:translateX(0)}
+.menu-head{padding:16px;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0}
+.menu-body{flex:1;overflow:auto;padding:10px}
+.m-item{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border-radius:10px;border:none;background:transparent;text-align:left;font-size:13.5px;font-weight:600;color:#111;cursor:pointer;text-decoration:none}
+.m-item.active{background:#e11d2a;color:#fff}
+.menu-foot{padding:10px;border-top:1px solid #f0f0f0}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:#111;color:#fff;padding:12px 18px;border-radius:999px;z-index:9999;opacity:0;transition:.35s}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="top">
+<button class="hamb" onclick="openM()"><span></span><span></span><span></span></button>
+<button class="btn-cerrar" onclick="cerrarSesion()">Cerrar sesión</button>
+</div>
+
+<div class="menu-bg" id="menuBg" onclick="closeM()"></div>
+<div class="menu" id="menu">
+<div class="menu-head"><div style="font-weight:900">Kigo <span style="color:#e11d2a">X</span>press</div><button onclick="closeM()">✕</button></div>
+<div class="menu-body">
+<a class="m-item" href="admin.html">Registro de Venta</a>
+<a class="m-item" href="historial.html">Historial</a>
+<a class="m-item" href="repartidores.html">Repartidores</a>
+<a class="m-item" href="clientes.html">Clientes</a>
+<a class="m-item active" href="configuracion.html">Configuración</a>
+</div>
+<div class="menu-foot"><button class="m-item" style="color:#e11d2a" onclick="cerrarSesion()">Cerrar sesión</button></div>
+</div>
+
+<div class="wrap">
+<div class="title">Configuración</div>
+
+<div class="card">
+<div class="lbl">Negocio - Tiempo Real</div>
+<input id="cfgNegocio" class="inp" placeholder="Nombre del negocio">
+<div class="grid2" style="margin-top:10px">
+<div><input id="cfgPrecioMoto" type="number" class="inp" placeholder="Precio Base Moto"><div class="small">Precio Mandado</div></div>
+<div><input id="cfgPrecioTrans" type="number" class="inp" placeholder="Precio Base Transporte"><div class="small">Precio Transporte</div></div>
+</div>
+<button class="btn-save" onclick="guardarConfig()">Guardar Configuración</button>
+<div class="small" style="margin-top:8px;text-align:center">Se guarda en Firebase /configuracion - Tiempo Real</div>
+</div>
+
+<div class="card">
+<div class="lbl">Usuario Admin - Tiempo Real</div>
+<input id="adminUser" class="inp" placeholder="Usuario Admin">
+<input id="adminPass" class="inp" style="margin-top:8px" placeholder="Contraseña Admin">
+<button class="btn-save" style="background:#111" onclick="guardarAdmin()">Actualizar Admin</button>
+</div>
+
+<div class="card">
+<div class="lbl">Repartidores - Usuario y Contraseña (Tiempo Real)</div>
+<div class="small" style="margin-bottom:10px">Si un repartidor cambia su clave en su panel, aquí se ve al instante. Si tú se la cambias aquí, a él le cambia al instante.</div>
+<div id="listaRepas"></div>
+</div>
+
+</div>
+
+<div id="toast" class="toast">Guardado ✓</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='index.html'; }
+function cerrarSesion(){ localStorage.clear(); location.href='index.html'; }
+function openM(){ document.getElementById('menu').classList.add('open'); document.getElementById('menuBg').classList.add('open'); }
+function closeM(){ document.getElementById('menu').classList.remove('open'); document.getElementById('menuBg').classList.remove('open'); }
+function showToast(){ const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
+// CONFIGURACION GENERAL TIEMPO REAL
+db.ref('configuracion').on('value', s=>{
+  const c = s.val() || {};
+  if(c.nombreNegocio) document.getElementById('cfgNegocio').value = c.nombreNegocio;
+  if(c.precioMoto) document.getElementById('cfgPrecioMoto').value = c.precioMoto;
+  if(c.precioTrans) document.getElementById('cfgPrecioTrans').value = c.precioTrans;
+  if(c.adminUser) document.getElementById('adminUser').value = c.adminUser;
+  if(c.adminPass) document.getElementById('adminPass').value = c.adminPass;
+});
+
+function guardarConfig(){
+  const data = {
+    nombreNegocio: document.getElementById('cfgNegocio').value.trim(),
+    precioMoto: parseInt(document.getElementById('cfgPrecioMoto').value)||40,
+    precioTrans: parseInt(document.getElementById('cfgPrecioTrans').value)||60,
+    updatedAt: Date.now()
+  };
+  db.ref('configuracion').update(data).then(()=>showToast());
+}
+
+function guardarAdmin(){
+  const data = {
+    adminUser: document.getElementById('adminUser').value.trim(),
+    adminPass: document.getElementById('adminPass').value.trim()
+  };
+  if(!data.adminUser || !data.adminPass) return alert('Completa usuario y contraseña admin');
+  db.ref('configuracion').update(data).then(()=>showToast());
+}
+
+// REPARTIDORES USUARIO Y CONTRASEÑA TIEMPO REAL
+let repartidoresCache = {};
+db.ref('repartidores').on('value', snap=>{
+  repartidoresCache = snap.val() || {};
+  renderRepas();
+});
+
+function renderRepas(){
+  const cont = document.getElementById('listaRepas');
+  cont.innerHTML = '';
+  Object.entries(repartidoresCache).forEach(([id, r])=>{
+    const foto = r.fotoBase64 || r.foto || `https://i.pravatar.cc/100?u=${id}`;
+    const user = r.usuario || r.user || '';
+    const pass = r.contraseña || r.password || '';
+    cont.innerHTML += `
+      <div class="user-row">
+        <img class="avatar" src="${foto}">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px">${r.nombre||'Sin nombre'}</div>
+          <div class="grid2" style="margin-top:6px">
+            <div><input id="u_${id}" class="inp" style="padding:8px 10px;font-size:12px" value="${user}" placeholder="Usuario"><div class="small">Usuario</div></div>
+            <div><input id="p_${id}" class="inp" style="padding:8px 10px;font-size:12px" value="${pass}" placeholder="Contraseña"><div class="small">Contraseña</div></div>
+          </div>
+        </div>
+        <button class="btn-save" style="width:auto;padding:8px 12px;margin:0;font-size:12px" onclick="actualizarRepa('${id}')">Guardar</button>
+      </div>
+    `;
+  });
+  if(Object.keys(repartidoresCache).length===0) cont.innerHTML='<div class="small">No hay repartidores</div>';
+}
+
+function actualizarRepa(id){
+  const usuario = document.getElementById(`u_${id}`).value.trim();
+  const contraseña = document.getElementById(`p_${id}`).value.trim();
+  if(!usuario || !contraseña) return alert('Usuario y contraseña requeridos');
+  db.ref('repartidores/'+id).update({
+    usuario: usuario,
+    contraseña: contraseña,
+    password: contraseña,
+    user: usuario
+  }).then(()=>showToast());
+}
+</script>
+</body>
+</html>
