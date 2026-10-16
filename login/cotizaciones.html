@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
 body{background:#f8f9fb;zoom:0.9}
@@ -16,12 +17,13 @@ body{background:#f8f9fb;zoom:0.9}
 .container{padding:14px;max-width:800px;margin:0 auto}
 .card{background:#fff;border:1px solid #eef0f3;border-radius:16px;padding:18px}
 .tipoRow{display:flex;gap:10px;margin-bottom:10px}
-.btn-tipo{flex:1;height:46px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:#6b7280}
+.btn-tipo{flex:1;height:46px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:#6b7280}
 .btn-tipo.tipo.active{background:#E10600;color:#fff;border-color:#E10600}
-.btn-tipo.servicio.active{background:#e5e7eb;color:#111;border-color:#e5e7eb}
-.info-row{display:flex;gap:8px;margin:12px 0}
+.btn-tipo.servicio.active{background:#111;color:#fff;border-color:#111}
+.info-row{display:flex;gap:8px;margin:12px 0;align-items:center}
 .info{flex:1;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:8px;font-size:10px;text-align:center}
 .info b{font-size:12px;display:block;color:#111}
+.btn-reset{width:42px;height:42px;border-radius:10px;border:1px solid #fca5a5;background:#fef2f2;color:#E10600;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .label{font-size:11px;font-weight:700;color:#6b7280;margin:10px 4px 4px;display:block}
 .input-box{display:flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;height:46px;position:relative;background:#fff}
 .input-box input{border:none;outline:none;width:100%;font-size:13px;background:transparent;padding-right:26px}
@@ -36,6 +38,8 @@ body{background:#f8f9fb;zoom:0.9}
 .btn{flex:1;height:48px;border-radius:12px;border:none;font-weight:800;font-size:13px;cursor:pointer}
 .btn-cotiza{background:#fff;border:1px solid #111}
 .btn-pedido{background:#E10600;color:#fff}
+.formBlock{display:none}
+.formBlock.active{display:block}
 .pac-container{z-index:10000!important;border-radius:12px}
 </style>
 </head>
@@ -45,19 +49,23 @@ body{background:#f8f9fb;zoom:0.9}
 <div class="container">
 <div class="card">
   <div class="tipoRow">
-    <button class="btn-tipo tipo active" id="btnAliados" onclick="setTipo('aliados')">Aliados</button>
-    <button class="btn-tipo tipo" id="btnNuevo" onclick="setTipo('nuevo')">Cliente nuevo</button>
+    <button class="btn-tipo tipo active" id="btnAliados" onclick="setTipo('aliados')"><span class="material-icons" style="font-size:18px">store</span> Aliados</button>
+    <button class="btn-tipo tipo" id="btnNuevo" onclick="setTipo('nuevo')"><span class="material-icons" style="font-size:18px">person_add</span> Cliente nuevo</button>
   </div>
   <div class="tipoRow">
-    <button class="btn-tipo servicio active" id="btnRecoger" onclick="setServicio('recoger')">A recoger</button>
-    <button class="btn-tipo servicio" id="btnComprar" onclick="setServicio('comprar')">Comprar</button>
+    <button class="btn-tipo servicio active" id="btnRecoger" onclick="setServicio('recoger')"><span class="material-icons" style="font-size:18px">inventory_2</span> A recoger</button>
+    <button class="btn-tipo servicio" id="btnComprar" onclick="setServicio('comprar')"><span class="material-icons" style="font-size:18px">shopping_cart</span> Comprar</button>
   </div>
+
   <div class="info-row">
     <div class="info"><span>Distancia</span><b id="distancia">--</b></div>
     <div class="info"><span>Tiempo</span><b id="tiempo">--</b></div>
     <div class="info"><span>Precio</span><b id="precioLabel">$0</b></div>
+    <button class="btn-reset" onclick="resetTodo()" title="Borrar todo"><span class="material-icons">delete</span></button>
   </div>
-  <div id="formAliadosRecoger">
+
+  <!-- FORM: ALIADOS RECOGER (ORIGINAL) -->
+  <div id="formAliadosRecoger" class="formBlock active">
     <label class="label">Nombre de aliado</label>
     <div class="input-box" style="overflow:visible">
       <input id="aliadoNombre" placeholder="Escribe nombre del aliado..." oninput="buscarAliado()">
@@ -78,17 +86,111 @@ body{background:#f8f9fb;zoom:0.9}
     <div class="input-box"><input id="precioAliado" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
     <label class="label">Tiempo estimado de recoger</label>
     <div class="tiempoRow">
-      <button class="tiempoBtn" onclick="setTiempo(5,this)">5 min</button>
-      <button class="tiempoBtn" onclick="setTiempo(10,this)">10 min</button>
-      <button class="tiempoBtn" onclick="setTiempo(15,this)">15 min</button>
-      <button class="tiempoBtn" onclick="setTiempo(20,this)">20 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosRecoger',5,this)">5 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosRecoger',10,this)">10 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosRecoger',15,this)">15 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosRecoger',20,this)">20 min</button>
     </div>
-    <div class="input-box" style="margin-top:8px"><input id="tiempoManual" placeholder="Escribe tiempo manual..."></div>
+    <div class="input-box" style="margin-top:8px"><input id="tiempoManualAR" placeholder="Escribe tiempo manual..."></div>
+    <div class="botones">
+      <button class="btn btn-cotiza" onclick="enviarCotizacion()">Enviar cotización al cliente</button>
+      <button class="btn btn-pedido" onclick="enviarPedido()">Enviar pedido al repartidor</button>
+    </div>
   </div>
-  <div class="botones">
-    <button class="btn btn-cotiza" onclick="enviarCotizacion()">Enviar cotización al cliente</button>
-    <button class="btn btn-pedido" onclick="enviarPedido()">Enviar pedido al repartidor</button>
+
+  <!-- FORM: ALIADOS COMPRAR -->
+  <div id="formAliadosComprar" class="formBlock">
+    <label class="label">Nombre de aliado</label>
+    <div class="input-box" style="overflow:visible">
+      <input id="aliadoNombreC" placeholder="Nombre del aliado..." oninput="buscarAliadoC()">
+      <button class="btn-clear" id="clearAliadoC" onclick="limpiar('aliadoNombreC','clearAliadoC')">✕</button>
+      <div class="sugList" id="sugAliadosC"></div>
+    </div>
+    <div id="aliadoInfoC" style="display:none"><div class="info" style="text-align:left;margin-top:10px"><span>Dirección del aliado</span><b id="aliadoDireccionC">-</b></div></div>
+    <label class="label">Producto a comprar</label>
+    <div class="input-box"><input id="productoAC" placeholder="Qué se va a comprar"></div>
+    <label class="label">Dirección de entrega</label>
+    <div class="input-box"><input id="deliveryAliadoC" placeholder="Dirección de entrega..."></div>
+    <label class="label">Nombre de quien recibe</label>
+    <div class="input-box"><input id="nombreRecibeC" placeholder="Nombre de quien recibe"></div>
+    <label class="label">Teléfono de quien recibe</label>
+    <div class="input-box"><input id="telRecibeC" placeholder="418 123 4567"></div>
+    <label class="label">Precio sugerido</label>
+    <div class="input-box"><input id="precioAliadoC" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
+    <label class="label">Tiempo estimado de comprar</label>
+    <div class="tiempoRow">
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosComprar',5,this)">5 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosComprar',10,this)">10 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosComprar',15,this)">15 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formAliadosComprar',20,this)">20 min</button>
+    </div>
+    <div class="input-box" style="margin-top:8px"><input id="tiempoManualAC" placeholder="Escribe tiempo manual..."></div>
+    <div class="botones">
+      <button class="btn btn-cotiza" onclick="enviarCotizacionAliadoComprar()">Enviar cotización al cliente</button>
+      <button class="btn btn-pedido" onclick="enviarPedidoAliadoComprar()">Enviar pedido al repartidor</button>
+    </div>
   </div>
+
+  <!-- FORM: CLIENTE NUEVO RECOGER -->
+  <div id="formNuevoRecoger" class="formBlock">
+    <label class="label">Nombre del cliente</label>
+    <div class="input-box"><input id="nuevoNombreR" placeholder="Nombre del cliente"></div>
+    <label class="label">Número de teléfono del cliente</label>
+    <div class="input-box"><input id="nuevoTelR" placeholder="418 123 4567"></div>
+    <label class="label">Dirección de recoger</label>
+    <div class="input-box"><input id="nuevoDirRecoger" placeholder="Dirección de recoger..."></div>
+    <label class="label">Dirección de entrega</label>
+    <div class="input-box"><input id="nuevoDirEntregaR" placeholder="Dirección de entrega..."></div>
+    <label class="label">Nombre de quien recibe</label>
+    <div class="input-box"><input id="nuevoRecibeR" placeholder="Nombre de quien recibe"></div>
+    <label class="label">Teléfono de quien recibe</label>
+    <div class="input-box"><input id="nuevoTelRecibeR" placeholder="Tel de quien recibe"></div>
+    <label class="label">Precio sugerido</label>
+    <div class="input-box"><input id="precioNuevoR" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
+    <label class="label">Tiempo estimado de recoger</label>
+    <div class="tiempoRow">
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoRecoger',5,this)">5 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoRecoger',10,this)">10 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoRecoger',15,this)">15 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoRecoger',20,this)">20 min</button>
+    </div>
+    <div class="input-box" style="margin-top:8px"><input id="tiempoManualNR" placeholder="Escribe tiempo manual..."></div>
+    <div class="botones">
+      <button class="btn btn-cotiza" onclick="enviarCotizacionNuevoRecoger()">Enviar cotización al cliente</button>
+      <button class="btn btn-pedido" onclick="enviarPedidoNuevoRecoger()">Enviar pedido al repartidor</button>
+    </div>
+  </div>
+
+  <!-- FORM: CLIENTE NUEVO COMPRAR -->
+  <div id="formNuevoComprar" class="formBlock">
+    <label class="label">Producto que se va a comprar</label>
+    <div class="input-box"><input id="nuevoProductoC" placeholder="Ej: Medicinas, refacciones..."></div>
+    <label class="label">Dónde se va a comprar</label>
+    <div class="input-box"><input id="nuevoDondeC" placeholder="Ej: Farmacia Guadalajara"></div>
+    <label class="label">Dirección de donde se va a comprar</label>
+    <div class="input-box"><input id="nuevoDirCompraC" placeholder="Dirección de la tienda..."></div>
+    <label class="label">Dirección de entrega</label>
+    <div class="input-box"><input id="nuevoDirEntregaC" placeholder="Dirección de entrega..."></div>
+    <label class="label">Número de teléfono</label>
+    <div class="input-box"><input id="nuevoTelC" placeholder="418 123 4567"></div>
+    <label class="label">Quién recibe</label>
+    <div class="input-box"><input id="nuevoRecibeC" placeholder="Nombre de quien recibe"></div>
+    <label class="label">Precio sugerido</label>
+    <div class="input-box"><input id="precioNuevoC" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
+    <label class="label">Tiempo estimado de comprar</label>
+    <div class="tiempoRow">
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoComprar',5,this)">5 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoComprar',10,this)">10 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoComprar',15,this)">15 min</button>
+      <button class="tiempoBtn" onclick="setTiempo('formNuevoComprar',20,this)">20 min</button>
+    </div>
+    <div class="input-box" style="margin-top:8px"><input id="tiempoManualNC" placeholder="Escribe tiempo manual..."></div>
+    <div class="botones">
+      <button class="btn btn-cotiza" onclick="enviarCotizacionNuevoComprar()">Enviar cotización al cliente</button>
+      <button class="btn btn-pedido" onclick="enviarPedidoNuevoComprar()">Enviar pedido al repartidor</button>
+    </div>
+  </div>
+
 </div>
 </div>
 <script>
@@ -97,7 +199,6 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 let map, directionsService, directionsRenderer, clientesLista=[], distanciaKm=0, tiempoMin=0, precioCalc=0, tipo='aliados', servicio='recoger', markerPickup=null, markerDelivery=null, autoDeliveryAliado;
 
-// === PRECIO POR DISTANCIA EN TIEMPO REAL DESDE CONFIGURACION ===
 let precioBase = 15;
 let precioPorKm = 8;
 db.ref('configuracion/precios').on('value', snap=>{
@@ -106,24 +207,28 @@ db.ref('configuracion/precios').on('value', snap=>{
   precioPorKm = parseFloat(p.km)||8;
   if(distanciaKm>0) recalcularPrecio();
 });
-
 function recalcularPrecio(){
   precioCalc = precioBase + (distanciaKm * precioPorKm);
   document.getElementById('distancia').innerText=distanciaKm.toFixed(1)+' km';
   document.getElementById('tiempo').innerText=tiempoMin+' min';
   document.getElementById('precioLabel').innerText='$'+precioCalc.toFixed(0);
-  document.getElementById('precioAliado').value=precioCalc.toFixed(0);
+  const activePrice = document.querySelector('.formBlock.active input[type=number]');
+  if(activePrice) activePrice.value=precioCalc.toFixed(0);
 }
-
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:true, polylineOptions:{ strokeColor:"#E10600", strokeWeight:5 } });
-  autoDeliveryAliado = new google.maps.places.Autocomplete(document.getElementById("deliveryAliado"), { componentRestrictions: { country: "mx" }, fields: ["formatted_address","geometry"] });
-  autoDeliveryAliado.addListener("place_changed", ()=>{
-    const place = autoDeliveryAliado.getPlace();
-    if(place && place.formatted_address){ document.getElementById("deliveryAliado").value = place.formatted_address; }
-    toggleClear('deliveryAliado','clearDelA'); calcularRutaAliado();
+  const inputs = ["deliveryAliado","deliveryAliadoC","nuevoDirRecoger","nuevoDirEntregaR","nuevoDirCompraC","nuevoDirEntregaC"];
+  inputs.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const ac = new google.maps.places.Autocomplete(el, { componentRestrictions: { country: "mx" }, fields: ["formatted_address","geometry"] });
+    ac.addListener("place_changed", ()=>{
+      const place = ac.getPlace();
+      if(place && place.formatted_address){ el.value = place.formatted_address; }
+      calcularRutaSegunFormulario();
+    });
   });
   cargarClientes();
 }
@@ -134,8 +239,16 @@ function cargarClientes(){
     clientesLista=Object.values(mapC);
   });
 }
-function setTipo(t){ tipo=t; document.getElementById('btnAliados').classList.toggle('active', t==='aliados'); document.getElementById('btnNuevo').classList.toggle('active', t==='nuevo'); }
-function setServicio(s){ servicio=s; document.getElementById('btnRecoger').classList.toggle('active', s==='recoger'); document.getElementById('btnComprar').classList.toggle('active', s==='comprar'); }
+function setTipo(t){ tipo=t; document.getElementById('btnAliados').classList.toggle('active', t==='aliados'); document.getElementById('btnNuevo').classList.toggle('active', t==='nuevo'); actualizarFormularios(); }
+function setServicio(s){ servicio=s; document.getElementById('btnRecoger').classList.toggle('active', s==='recoger'); document.getElementById('btnComprar').classList.toggle('active', s==='comprar'); actualizarFormularios(); }
+function actualizarFormularios(){
+  document.querySelectorAll('.formBlock').forEach(f=>f.classList.remove('active'));
+  if(tipo==='aliados' && servicio==='recoger') document.getElementById('formAliadosRecoger').classList.add('active');
+  if(tipo==='aliados' && servicio==='comprar') document.getElementById('formAliadosComprar').classList.add('active');
+  if(tipo==='nuevo' && servicio==='recoger') document.getElementById('formNuevoRecoger').classList.add('active');
+  if(tipo==='nuevo' && servicio==='comprar') document.getElementById('formNuevoComprar').classList.add('active');
+  calcularRutaSegunFormulario();
+}
 function buscarAliado(){
   const q=document.getElementById('aliadoNombre').value.toLowerCase().trim();
   const list=document.getElementById('sugAliados');
@@ -145,17 +258,37 @@ function buscarAliado(){
   if(!fil.length){ list.style.display='none'; return; }
   list.innerHTML=''; fil.forEach(c=>{
     const d=document.createElement('div'); d.className='sugItem'; d.innerHTML=`<b>${c.nombre}</b><br><span style="color:#6b7280;font-size:10px">${c.direccion||'Sin dirección'}</span>`;
-    d.onclick=()=>{ document.getElementById('aliadoNombre').value=c.nombre; document.getElementById('aliadoDireccion').innerText=c.direccion||'-'; document.getElementById('aliadoInfo').style.display='block'; list.style.display='none'; calcularRutaAliado(); };
+    d.onclick=()=>{ document.getElementById('aliadoNombre').value=c.nombre; document.getElementById('aliadoDireccion').innerText=c.direccion||'-'; document.getElementById('aliadoInfo').style.display='block'; list.style.display='none'; calcularRutaSegunFormulario(); };
+    list.appendChild(d);
+  }); list.style.display='block';
+}
+function buscarAliadoC(){
+  const q=document.getElementById('aliadoNombreC').value.toLowerCase().trim();
+  const list=document.getElementById('sugAliadosC');
+  document.getElementById('clearAliadoC').classList.toggle('show', q.length>0);
+  if(!q){ list.style.display='none'; return; }
+  const fil=clientesLista.filter(c=>c.nombre.toLowerCase().includes(q)).slice(0,6);
+  if(!fil.length){ list.style.display='none'; return; }
+  list.innerHTML=''; fil.forEach(c=>{
+    const d=document.createElement('div'); d.className='sugItem'; d.innerHTML=`<b>${c.nombre}</b><br><span style="color:#6b7280;font-size:10px">${c.direccion||'Sin dirección'}</span>`;
+    d.onclick=()=>{ document.getElementById('aliadoNombreC').value=c.nombre; document.getElementById('aliadoDireccionC').innerText=c.direccion||'-'; document.getElementById('aliadoInfoC').style.display='block'; list.style.display='none'; calcularRutaSegunFormulario(); };
     list.appendChild(d);
   }); list.style.display='block';
 }
 function toggleClear(i,b){ document.getElementById(b).classList.toggle('show', document.getElementById(i).value.length>0); }
-function limpiar(id, btn){ document.getElementById(id).value=''; document.getElementById(btn).classList.remove('show'); if(id==='deliveryAliado'){ directionsRenderer.setDirections({routes:[]}); if(markerPickup) markerPickup.setMap(null); if(markerDelivery) markerDelivery.setMap(null); } }
-function setTiempo(min, el){ document.querySelectorAll('.tiempoBtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); document.getElementById('tiempoManual').value=min+' min'; }
-function calcularRutaAliado(){
-  const origen=document.getElementById('aliadoDireccion').innerText;
-  const destino=document.getElementById('deliveryAliado').value;
+function limpiar(id, btn){ document.getElementById(id).value=''; document.getElementById(btn).classList.remove('show'); if(id.includes('delivery')){ directionsRenderer.setDirections({routes:[]}); if(markerPickup) markerPickup.setMap(null); if(markerDelivery) markerDelivery.setMap(null); } calcularRutaSegunFormulario(); }
+function setTiempo(formId,min, el){ document.querySelectorAll('#'+formId+' .tiempoBtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); document.querySelector('#'+formId+' input[id^=tiempoManual]').value=min+' min'; }
+
+function calcularRutaSegunFormulario(){
+  let origen='', destino='';
+  if(tipo==='aliados' && servicio==='recoger'){ origen=document.getElementById('aliadoDireccion').innerText; destino=document.getElementById('deliveryAliado').value; }
+  if(tipo==='aliados' && servicio==='comprar'){ origen=document.getElementById('aliadoDireccionC').innerText; destino=document.getElementById('deliveryAliadoC').value; }
+  if(tipo==='nuevo' && servicio==='recoger'){ origen=document.getElementById('nuevoDirRecoger').value; destino=document.getElementById('nuevoDirEntregaR').value; }
+  if(tipo==='nuevo' && servicio==='comprar'){ origen=document.getElementById('nuevoDirCompraC').value; destino=document.getElementById('nuevoDirEntregaC').value; }
   if(!origen || origen==='-' || !destino) return;
+  calcularRuta(origen,destino);
+}
+function calcularRuta(origen,destino){
   directionsService.route({ origin: origen, destination: destino, travelMode: google.maps.TravelMode.DRIVING }, (res, status)=>{
     if(status==='OK'){
       directionsRenderer.setDirections(res);
@@ -168,6 +301,25 @@ function calcularRutaAliado(){
     }
   });
 }
+function resetTodo(){
+  distanciaKm=0; tiempoMin=0; precioCalc=0;
+  document.getElementById('distancia').innerText='--';
+  document.getElementById('tiempo').innerText='--';
+  document.getElementById('precioLabel').innerText='$0';
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  document.getElementById('aliadoDireccion').innerText='-';
+  document.getElementById('aliadoDireccionC').innerText='-';
+  document.getElementById('aliadoInfo').style.display='none';
+  document.getElementById('aliadoInfoC').style.display='none';
+  document.querySelectorAll('.sugList').forEach(l=>l.style.display='none');
+  document.querySelectorAll('.btn-clear').forEach(b=>b.classList.remove('show'));
+  document.querySelectorAll('.tiempoBtn').forEach(b=>b.classList.remove('active'));
+  directionsRenderer.setDirections({routes:[]});
+  if(markerPickup) markerPickup.setMap(null);
+  if(markerDelivery) markerDelivery.setMap(null);
+}
+
+// ENVIOS ORIGINALES
 function enviarCotizacion(){
   const dirAliado=document.getElementById('aliadoDireccion').innerText;
   const entrega=document.getElementById('deliveryAliado').value.trim();
@@ -185,11 +337,86 @@ function enviarPedido(){
   const nombreR=document.getElementById('nombreRecibe').value.trim();
   const telR=document.getElementById('telRecibe').value.trim();
   const precio=document.getElementById('precioAliado').value;
-  const tRec=document.getElementById('tiempoManual').value || 'por confirmar';
+  const tRec=document.getElementById('tiempoManualAR').value || 'por confirmar';
   if(!aliado||!entrega){ alert('Completa datos'); return; }
   const numeroPedido = Math.floor(1000 + Math.random() * 9000);
   const msgRep = `🚨 #${numeroPedido}\n📍 Recoger\n👤 ${aliado}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección del aliado:\n${dirAliado}\n\n🏠 Dirección de entrega:\n${entrega}\n\n👤 Nombre del cliente:\n${nombreR}\n\n📞 Número de teléfono:\n${telR}\n\n💰 Valor del servicio:\n$${precio}\n\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`, '_blank');
+}
+// ALIADOS COMPRAR
+function enviarCotizacionAliadoComprar(){
+  const aliado=document.getElementById('aliadoNombreC').value;
+  const dirAliado=document.getElementById('aliadoDireccionC').innerText;
+  const prod=document.getElementById('productoAC').value;
+  const entrega=document.getElementById('deliveryAliadoC').value;
+  const precio=document.getElementById('precioAliadoC').value;
+  const datos={ tipo, servicio, aliado, dirAliado, producto:prod, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  db.ref('cotizaciones').push(datos);
+  const msg=`🏍️ *KIGO XPRESS* 🏍️\n📦 *COTIZACIÓN - COMPRAR*\n\n👤 Aliado: ${aliado}\n📍 Recoger en: ${dirAliado}\n🛒 Producto: ${prod}\n🏠 Entrega: ${entrega}\n💰 Servicio: $${precio}\n🛣️ ${distanciaKm.toFixed(1)} km\n¿Confirmamos? ✅`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function enviarPedidoAliadoComprar(){
+  const aliado=document.getElementById('aliadoNombreC').value;
+  const dirAliado=document.getElementById('aliadoDireccionC').innerText;
+  const prod=document.getElementById('productoAC').value;
+  const entrega=document.getElementById('deliveryAliadoC').value;
+  const nombreR=document.getElementById('nombreRecibeC').value;
+  const telR=document.getElementById('telRecibeC').value;
+  const precio=document.getElementById('precioAliadoC').value;
+  const tRec=document.getElementById('tiempoManualAC').value||'por confirmar';
+  const numeroPedido=Math.floor(1000+Math.random()*9000);
+  const msgRep=`🚨 #${numeroPedido}\n📍 Comprar\n👤 ${aliado}\n🛒 ${prod}\n⏱️ Comprar en "${tRec}"\n\n📍 Dirección aliado:\n${dirAliado}\n\n🏠 Entrega:\n${entrega}\n\n👤 Cliente: ${nombreR}\n📞 ${telR}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`,'_blank');
+}
+// NUEVO RECOGER
+function enviarCotizacionNuevoRecoger(){
+  const nombre=document.getElementById('nuevoNombreR').value;
+  const tel=document.getElementById('nuevoTelR').value;
+  const dirR=document.getElementById('nuevoDirRecoger').value;
+  const dirE=document.getElementById('nuevoDirEntregaR').value;
+  const precio=document.getElementById('precioNuevoR').value;
+  const datos={ tipo, servicio, nombre, tel, dirR, dirE, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  db.ref('cotizaciones').push(datos);
+  const msg=`🏍️ *KIGO XPRESS* 🏍️\n📦 *COTIZACIÓN - RECOGER (NUEVO)*\n\n👤 Cliente: ${nombre}\n📞 Tel: ${tel}\n📍 Recoger: ${dirR}\n🏠 Entrega: ${dirE}\n💰 Servicio: $${precio}\n🛣️ ${distanciaKm.toFixed(1)} km\n¿Confirmamos? ✅`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function enviarPedidoNuevoRecoger(){
+  const nombre=document.getElementById('nuevoNombreR').value;
+  const tel=document.getElementById('nuevoTelR').value;
+  const dirR=document.getElementById('nuevoDirRecoger').value;
+  const dirE=document.getElementById('nuevoDirEntregaR').value;
+  const recibe=document.getElementById('nuevoRecibeR').value;
+  const telRec=document.getElementById('nuevoTelRecibeR').value;
+  const precio=document.getElementById('precioNuevoR').value;
+  const tRec=document.getElementById('tiempoManualNR').value||'por confirmar';
+  const numeroPedido=Math.floor(1000+Math.random()*9000);
+  const msgRep=`🚨 #${numeroPedido}\n📍 Recoger - Cliente Nuevo\n👤 Cliente: ${nombre}\n📞 ${tel}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección recoger:\n${dirR}\n\n🏠 Entrega:\n${dirE}\n\n👤 Recibe: ${recibe}\n📞 Recibe: ${telRec}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirR)}&destination=${encodeURIComponent(dirE)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`,'_blank');
+}
+// NUEVO COMPRAR
+function enviarCotizacionNuevoComprar(){
+  const prod=document.getElementById('nuevoProductoC').value;
+  const donde=document.getElementById('nuevoDondeC').value;
+  const dirC=document.getElementById('nuevoDirCompraC').value;
+  const dirE=document.getElementById('nuevoDirEntregaC').value;
+  const precio=document.getElementById('precioNuevoC').value;
+  const datos={ tipo, servicio, producto:prod, donde, dirC, dirE, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  db.ref('cotizaciones').push(datos);
+  const msg=`🏍️ *KIGO XPRESS* 🏍️\n📦 *COTIZACIÓN - COMPRAR (NUEVO)*\n\n🛒 Producto: ${prod}\n🏪 Donde: ${donde}\n📍 Comprar en: ${dirC}\n🏠 Entrega: ${dirE}\n💰 Servicio: $${precio}\n🛣️ ${distanciaKm.toFixed(1)} km\n¿Confirmamos? ✅`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function enviarPedidoNuevoComprar(){
+  const prod=document.getElementById('nuevoProductoC').value;
+  const donde=document.getElementById('nuevoDondeC').value;
+  const dirC=document.getElementById('nuevoDirCompraC').value;
+  const dirE=document.getElementById('nuevoDirEntregaC').value;
+  const tel=document.getElementById('nuevoTelC').value;
+  const recibe=document.getElementById('nuevoRecibeC').value;
+  const precio=document.getElementById('precioNuevoC').value;
+  const tRec=document.getElementById('tiempoManualNC').value||'por confirmar';
+  const numeroPedido=Math.floor(1000+Math.random()*9000);
+  const msgRep=`🚨 #${numeroPedido}\n📍 Comprar - Cliente Nuevo\n🛒 Producto: ${prod}\n🏪 Donde: ${donde}\n⏱️ Comprar en "${tRec}"\n\n📍 Dirección compra:\n${dirC}\n\n🏠 Entrega:\n${dirE}\n\n👤 Recibe: ${recibe}\n📞 ${tel}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirC)}&destination=${encodeURIComponent(dirE)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`,'_blank');
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initMap" async defer></script>
