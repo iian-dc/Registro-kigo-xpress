@@ -32,12 +32,12 @@
 .total-val{font-size:20px;font-weight:900;color:#e11d2a}
 .btn-reg{width:100%;margin-top:14px;background:#e11d2a;color:#fff;border:none;border-radius:999px;padding:13px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 4px 12px rgba(225,29,42,.2)}
 .btn-reg svg{width:16px;height:16px}
-.toast-exito{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:#111;color:#fff;padding:12px 18px;border-radius:999px;display:flex;align-items:center;gap:10px;z-index:9999;opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:13.5px;font-weight:700;white-space:nowrap}
+.toast-exito{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:#111;color:#fff;padding:12px 18px;border-radius:999px;display:flex;align-items:center;gap:10px;z-index:9999;opacity:0;transition:all.35s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:13.5px;font-weight:700;white-space:nowrap}
 .toast-exito.show{transform:translateX(-50%) translateY(0);opacity:1}
-.toast-exito .check{width:22px;height:22px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.toast-exito.check{width:22px;height:22px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .menu-bg{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none;z-index:100}
 .menu-bg.open{display:block}
-.menu{position:fixed;left:0;top:0;bottom:0;width:280px;background:#fff;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:101;padding:0;display:flex;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.15)}
+.menu{position:fixed;left:0;top:0;bottom:0;width:280px;background:#fff;transform:translateX(-100%);transition:transform.28s cubic-bezier(.4,0,.2,1);z-index:101;padding:0;display:flex;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.15)}
 .menu.open{transform:translateX(0)}
 .menu-head{padding:16px 16px 12px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
 .menu-logo{font-family:'Segoe Script',cursive;font-size:22px;font-weight:900}
@@ -48,8 +48,8 @@
 .m-item{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border-radius:10px;border:none;background:transparent;text-align:left;font-size:13.5px;font-weight:600;color:#111;cursor:pointer;text-decoration:none}
 .m-item:hover{background:#f9fafb}
 .m-item.active{background:#e11d2a;color:#fff}
-.m-item .ico{width:18px;display:flex;align-items:center;justify-content:center}
-.m-item .ico svg{width:16px;height:16px}
+.m-item.ico{width:18px;display:flex;align-items:center;justify-content:center}
+.m-item.ico svg{width:16px;height:16px}
 .menu-foot{padding:10px;border-top:1px solid #f0f0f0}
 .suggest{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:14px;margin-top:5px;z-index:20;max-height:160px;overflow:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.1)}
 .s-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f3f3;font-size:13px}
@@ -100,7 +100,7 @@
 <div class="tipo">
 <button type="button" id="btnMoto" class="btn-tipo active" onclick="setTipo('moto')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M5 17.5V14a2 2 0 0 1 2-2h6M18.5 17.5V11h-4M13 8l2-3"/></svg> Moto Mandado</button>
 <button type="button" id="btnTrans" class="btn-tipo" onclick="setTipo('transporte')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 6v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Transporte</button>
-</div>  
+</div>
 <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Precio</div>
 <div class="field">
 <input id="precio" type="number" class="inp" placeholder="$ 0.00" oninput="calcTotal()">
@@ -130,8 +130,8 @@
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-(function(){ if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='../index.html'; } })();
-function cerrarSesion(){ localStorage.clear(); location.href='../index.html'; }
+(function(){ if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='login/'; } })();
+function cerrarSesion(){ localStorage.clear(); location.href='login/'; }
 function openM(){ document.getElementById('menu').classList.add('open'); document.getElementById('menuBg').classList.add('open'); }
 function closeM(){ document.getElementById('menu').classList.remove('open'); document.getElementById('menuBg').classList.remove('open'); }
 let tipoActual='moto';
@@ -187,4 +187,4 @@ box.style.display='block';
 function selCli(n){ document.getElementById('cliente').value=n; document.getElementById('sugBox').style.display='none'; }
 </script>
 </body>
-</html>  
+</html>
