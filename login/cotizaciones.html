@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizaciones - Kigo Xpress</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
+body{background:#f8f9fb;zoom:0.9}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f3;position:sticky;top:0;z-index:50}
+.btn-x{width:36px;height:36px;background:#E10600;border:none;color:#fff;border-radius:10px;font-weight:900;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.title h1{font-size:18px;font-weight:800}
+.title p{font-size:11px;color:#6b7280}
+#map{width:100%;height:360px;background:#e5e7eb;border-bottom:1px solid #eef0f3}
+.container{padding:14px;max-width:800px;margin:0 auto}
+.card{background:#fff;border:1px solid #eef0f3;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.04);padding:18px;margin-bottom:14px}
+.label{font-size:11px;font-weight:700;color:#6b7280;margin:10px 4px 4px;display:block}
+.input-box{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;height:46px}
+.input-box input{border:none;outline:none;width:100%;font-size:13px;background:transparent}
+.icon{width:16px;height:16px;color:#6b7280;flex-shrink:0}
+.info-row{display:flex;gap:10px;margin-top:12px}
+.info{flex:1;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;font-size:11px;font-weight:600}
+.info b{font-size:13px;display:block;color:#111}
+.botones{display:flex;gap:12px;margin-top:16px}
+.btn{flex:1;height:48px;border-radius:12px;border:none;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-cotiza{background:#fff;border:1px solid #111;color:#111}
+.btn-pedido{background:#E10600;color:#fff}
+.pac-container{z-index:10000 !important;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="btn-x" onclick="location.href='admin.html'">✕</button>
+  <div class="title">
+    <h1>Cotizaciones</h1>
+    <p>Mapa vinculado a Google Maps - Kigo Xpress</p>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<div class="container">
+  <div class="card">
+    <label class="label">Dirección de recogida</label>
+    <div class="input-box">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>
+      <input id="pickup" placeholder="Escribe dirección de recogida... Ej: Calle 123, Dolores Hidalgo">
+    </div>
+
+    <label class="label">Dirección de entrega</label>
+    <div class="input-box">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>
+      <input id="delivery" placeholder="Escribe dirección de entrega...">
+    </div>
+
+    <div class="info-row">
+      <div class="info"><span>Distancia</span><b id="distancia">-- km</b></div>
+      <div class="info"><span>Tiempo estimado</span><b id="tiempo">-- min</b></div>
+      <div class="info"><span>Precio sugerido</span><b id="precio">$0</b></div>
+    </div>
+
+    <label class="label">Cliente</label>
+    <div class="input-box"><input id="cliente" placeholder="Nombre del cliente"></div>
+    
+    <label class="label">Teléfono / WhatsApp</label>
+    <div class="input-box"><input id="telefono" placeholder="418 123 4567"></div>
+
+    <div class="botones">
+      <button class="btn btn-cotiza" onclick="enviarCotizacion()">
+        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7l1 5a2 2 0 0 1-.6 1.8l-1.4 1.4a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 1.8-.6l5 1A2 2 0 0 1 22 16.9z"/></svg>
+        Enviar cotización al cliente
+      </button>
+      <button class="btn btn-pedido" onclick="enviarPedido()">
+        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 6v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Enviar pedido al repartidor
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+let map, directionsService, directionsRenderer, autocompletePickup, autocompleteDelivery;
+let distanciaKm=0, tiempoMin=0, precioCalc=0;
+
+function initMap(){
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 21.1576, lng: -100.9339 }, // Dolores Hidalgo
+    zoom: 13,
+    styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }]
+  });
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:false });
+
+  autocompletePickup = new google.maps.places.Autocomplete(document.getElementById("pickup"), { componentRestrictions: { country: "mx" } });
+  autocompleteDelivery = new google.maps.places.Autocomplete(document.getElementById("delivery"), { componentRestrictions: { country: "mx" } });
+
+  autocompletePickup.addListener("place_changed", calcularRuta);
+  autocompleteDelivery.addListener("place_changed", calcularRuta);
+}
+
+function calcularRuta(){
+  const origen = document.getElementById("pickup").value;
+  const destino = document.getElementById("delivery").value;
+  if(!origen || !destino) return;
+
+  directionsService.route({
+    origin: origen,
+    destination: destino,
+    travelMode: google.maps.TravelMode.DRIVING
+  }, (response, status)=>{
+    if(status === 'OK'){
+      directionsRenderer.setDirections(response);
+      const leg = response.routes[0].legs[0];
+      distanciaKm = leg.distance.value / 1000;
+      tiempoMin = Math.round(leg.duration.value / 60);
+      // Precio ejemplo: $15 base + $8 por km
+      precioCalc = 15 + (distanciaKm * 8);
+      
+      document.getElementById("distancia").innerText = distanciaKm.toFixed(2) + " km";
+      document.getElementById("tiempo").innerText = tiempoMin + " min";
+      document.getElementById("precio").innerText = "$" + precioCalc.toFixed(0);
+    }
+  });
+}
+
+function enviarCotizacion(){
+  const pickup = document.getElementById("pickup").value.trim();
+  const delivery = document.getElementById("delivery").value.trim();
+  const cliente = document.getElementById("cliente").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+  if(!pickup || !delivery || !cliente){ alert("Completa recogida, entrega y cliente"); return; }
+
+  const data = { cliente, telefono, pickup, delivery, distancia: distanciaKm.toFixed(2), tiempo: tiempoMin, precio: precioCalc.toFixed(0), fecha: new Date().toISOString().slice(0,10), estado: "cotizado" };
+  
+  db.ref('cotizaciones').push(data).then(()=>{
+    const msg = `Hola ${cliente}, Kigo Xpress:%0A*Recogida:* ${pickup}%0A*Entrega:* ${delivery}%0A*Distancia:* ${distanciaKm.toFixed(2)} km%0A*Tiempo:* ${tiempoMin} min%0A*Precio:* $${precioCalc.toFixed(0)}`;
+    if(telefono){
+      window.open(`https://wa.me/52${telefono.replace(/\D/g,'')}?text=${msg}`, '_blank');
+    }else{
+      alert("Cotización guardada: $" + precioCalc.toFixed(0));
+    }
+  });
+}
+
+function enviarPedido(){
+  const pickup = document.getElementById("pickup").value.trim();
+  const delivery = document.getElementById("delivery").value.trim();
+  const cliente = document.getElementById("cliente").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+  if(!pickup || !delivery || !cliente){ alert("Completa recogida, entrega y cliente"); return; }
+
+  const data = { cliente, telefono, clienteNombre: cliente, direccion: delivery, direccionRecogida: pickup, precio: precioCalc.toFixed(0), distancia: distanciaKm.toFixed(2), fecha: new Date().toISOString().slice(0,10), estado: "pendiente", origen: "cotizaciones" };
+
+  // Lo guarda en ventas para que aparezca en clientes
+  db.ref('ventas').push({ cliente: cliente, telefono: telefono, direccion: delivery, direccionRecogida: pickup, precio: precioCalc.toFixed(0), fecha: new Date().toISOString().slice(0,10), tipo: "pedido_repartidor" });
+  db.ref('pedidos_repartidor').push(data).then(()=>{
+    alert("Pedido enviado al repartidor");
+    location.href='admin.html';
+  });
+}
+</script>
+
+<!-- PON AQUÍ TU API KEY DE GOOGLE -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initMap" async defer></script>
+
+</body>
+</html>
