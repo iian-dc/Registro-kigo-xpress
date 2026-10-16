@@ -23,6 +23,7 @@
     <div class="selectMes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> <select id="fMes"><option value="">Todos los meses</option><option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select></div>
   </div>
 </div>
+
 <div style="padding:0 14px">
 <div class="tabs">
   <div class="tab active" id="tabLista" onclick="cambiarTab('lista')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c1.1 0 2-.9 2-2s-.9-2-2-2-2.9-2 2.9 2 2 2zm-4 0c1.1 0 2-.9 2-2s-.9-2-2-2-2.9-2 2.9 2 2 2zm8 0c1.1 0 2-.9 2-2s-.9-2-2-2-2.9-2 2.9 2 2 2zM12 14c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg> Lista de clientes</div>
@@ -30,6 +31,7 @@
   <div class="tab" id="tabFrecuentes" onclick="cambiarTab('frecuentes')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 22V8h2v14H3zm4 0V2h2v20H7zm4 0v-8h2v8H11zm4 0V12h2v10h-2zm4 0V6h2v16h-2z"/></svg> Clientes frecuentes</div>
 </div>
 </div>
+
 <div class="container" id="container">
   <div class="card" id="mainCard">
     <div class="tableWrap">
@@ -49,17 +51,19 @@
     <div id="frecuentesList"></div>
   </div>
 </div>
+
 <div id="modalEdit" class="modal-bg">
   <div class="modal">
     <h3>Editar cliente</h3>
     <label>Nombre del cliente</label><input id="eNombre">
-    <label>Teléfono</label><input id="eTelefono">
-    <label>Dirección exacta</label><input id="eDireccion">
+    <label>Teléfono</label><input id="eTelefono" placeholder="418 123 4567">
+    <label>Dirección exacta</label><input id="eDireccion" placeholder="Calle, colonia, número">
     <div class="info-box" id="eInfo"></div>
     <label>Estado</label><select id="eEstado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select>
     <div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div>
   </div>
 </div>
+
 <script src="clientes-datos.js"></script>
 <script src="clientes-render.js"></script>
 <script src="clientes-editar.js"></script>
@@ -118,104 +122,3 @@ body{background:#f8f9fb;zoom:0.9}
 .btn-save{background:#E10600;color:#fff;border-radius:999px;padding:9px 16px;border:none;font-weight:700;cursor:pointer}
 .btn-cancel{background:#f3f4f6;border-radius:999px;padding:9px 16px;border:none;font-weight:600;cursor:pointer}
 .info-box{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;margin:8px 0;font-size:11px}
-const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-let clientes=[], filtrados=[], pagina=1, porPag=8, tab='lista';
-let editKey=null;
-function formatFecha(f){ if(!f) return '-'; if(f.includes('-')){const [y,m,d]=f.split('-');return `${d}/${m}/${y}`;}return f;}
-function normalizarCliente(nombre){
-  if(!nombre) return nombre;
-  const n=nombre.trim().toLowerCase();
-  if(n==='cliente (centro)' || n==='cliente centro' || n==='cliente(centro)') return 'Mil sabores';
-  return nombre.trim();
-}
-db.ref('ventas').on('value', snap=>{
-  const v=snap.val()||{};
-  const updates={};
-  Object.entries(v).forEach(([id, p])=>{
-    const orig=(p.cliente||'').trim();
-    const norm=normalizarCliente(orig);
-    if(norm!==orig){ updates[id+'/cliente']=norm; }
-  });
-  if(Object.keys(updates).length>0){ db.ref('ventas').update(updates); return; }
-  const map={};
-  Object.entries(v).forEach(([id, p])=>{
-    const nombre=normalizarCliente(p.cliente||'Sin nombre').trim();
-    const key=nombre.toLowerCase();
-    if(!map[key]) map[key]={nombre, telefono:p.telefono||'', direccion:p.direccion||'', total:0, totalDinero:0, ultimo:'', ultimoRaw:'', historial:[]};
-    const valor=parseFloat(p.precio||p.valor||0);
-    map[key].total++;
-    map[key].totalDinero+=valor;
-    map[key].historial.push({fecha:p.fecha||'', valor:valor, id:id});
-    if(p.telefono &&!map[key].telefono) map[key].telefono=p.telefono;
-    if(p.direccion &&!map[key].direccion) map[key].direccion=p.direccion;
-    if(!map[key].ultimoRaw || (p.fecha||'')>map[key].ultimoRaw){ map[key].ultimoRaw=p.fecha||''; map[key].ultimo=p.fecha||''; }
-  });
-  Object.values(map).forEach(c=>{ c.historial.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'')); });
-  db.ref('clientes').once('value', s=>{
-    const extras=s.val()||{};
-    Object.values(extras).forEach(ec=>{
-      const k=(ec.nombre||'').toLowerCase().trim();
-      const normK=normalizarCliente(k).toLowerCase();
-      if(map[normK]){
-        if(ec.telefono) map[normK].telefono=ec.telefono;
-        if(ec.direccion) map[normK].direccion=ec.direccion;
-        if(ec.estado) map[normK].estado=ec.estado;
-      }
-    });
-    clientes=Object.values(map).map(c=>({...c, estado:c.estado||'Activo'}));
-    clientes.sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
-    aplicarFiltros();
-  });
-});
-function cambiarTab(t){
-  tab=t;
-  document.getElementById('tabLista').classList.toggle('active',t==='lista');
-  document.getElementById('tabRanking').classList.toggle('active',t==='ranking');
-  document.getElementById('tabFrecuentes').classList.toggle('active',t==='frecuentes');
-  const mainCard=document.getElementById('mainCard');
-  const rankingCard=document.getElementById('rankingCard');
-  const frecuentesCard=document.getElementById('frecuentesCard');
-  const container=document.getElementById('container');
-  if(t==='ranking'){
-    mainCard.style.display='none';
-    frecuentesCard.style.display='none';
-    rankingCard.classList.add('show');
-    rankingCard.style.display='block';
-    container.style.gridTemplateColumns='1fr';
-  }else if(t==='frecuentes'){
-    mainCard.style.display='block';
-    rankingCard.classList.remove('show');
-    rankingCard.style.display='none';
-    frecuentesCard.style.display='block';
-    container.style.gridTemplateColumns='1fr 360px';
-    filtrados=clientes.filter(c=>c.total>=3).sort((a,b)=>b.total-a.total);
-    if(filtrados.length===0) filtrados=[...clientes].sort((a,b)=>b.total-a.total);
-  }else{
-    mainCard.style.display='block';
-    rankingCard.classList.remove('show');
-    rankingCard.style.display='none';
-    frecuentesCard.style.display='none';
-    container.style.gridTemplateColumns='1fr 360px';
-    filtrados=[...clientes].sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
-  }
-  pagina=1;
-  render();
-}
-function aplicarFiltros(){
-  const q=document.getElementById('buscar').value.toLowerCase().trim();
-  const mes=document.getElementById('fMes').value;
-  let base=[...clientes];
-  if(tab==='frecuentes') base=base.filter(c=>c.total>=3);
-  base=base.filter(c=>{
-    if(q &&!`${c.nombre} ${c.telefono} ${c.direccion}`.toLowerCase().includes(q)) return false;
-    if(mes && c.ultimoRaw){ if(parseInt(c.ultimoRaw.split('-')[1])!==parseInt(mes)) return false; }
-    return true;
-  });
-  if(tab==='lista') base.sort((a,b)=> (b.ultimoRaw||'').localeCompare(a.ultimoRaw||''));
-  else base.sort((a,b)=>b.total-a.total);
-  filtrados=base;
-  pagina=1;
-  render();
-}
