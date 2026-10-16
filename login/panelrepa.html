@@ -32,6 +32,8 @@ body{background:#f6f7f9}
 .modal-bg.open{display:block}
 .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);width:92%;max-width:380px;background:#fff;border-radius:18px;padding:18px;z-index:100;display:none;max-height:85vh;overflow:auto}
 .modal.open{display:block;transform:translate(-50%,-50%) scale(1)}
+.gasto-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.gasto-item:last-child{border:none}
 </style>
 </head>
 <body>
@@ -60,16 +62,20 @@ body{background:#f6f7f9}
 <div class="profile">
   <div class="card">
     <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">receipt_long</span> Ingresar Gasto</h3>
-    <p style="font-size:10px;color:#6b7280;margin-top:4px">Registra gasolina, refacciones, comida, etc. Se descuenta de tus ingresos.</p>
-    <input id="gastoDesc" class="inp" placeholder="Ej: Gasolina, llanta, comida">
-    <input id="gastoMonto" type="number" class="inp" placeholder="$ 0.00">
+    <p style="font-size:10px;color:#6b7280;margin-top:4px">Ingresa fecha para ver ingresos reales por mes/semana.</p>
+    <input id="gastoDesc" class="inp" placeholder="Descripción Ej: Gasolina">
+    <input id="gastoMonto" type="number" class="inp" placeholder="$ Monto">
+    <input id="gastoFecha" type="date" class="inp" placeholder="Fecha">
     <button onclick="guardarGasto()" class="btn" style="background:#111;color:#fff;margin-top:10px"><span class="material-icons" style="font-size:16px">save</span> Guardar Gasto</button>
     <p id="msgGasto" style="font-size:11px;color:#16a34a;margin-top:8px;display:none"></p>
-    <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
-      <p style="font-size:11px;font-weight:800" id="pIngMes">Ingresos mes: $0</p>
-      <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
+    
+    <div style="margin-top:16px;border-top:1px solid #eef0f3;padding-top:12px">
+      <h4 style="font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px">list</span> LISTADO DE GASTOS</h4>
+      <div id="listaGastos" style="margin-top:8px;max-height:260px;overflow:auto"></div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;display:flex;justify-content:space-between;font-size:11px;font-weight:800">
+        <span>Total lista:</span><span id="totalListaGastos" style="color:#ef4444">$0</span>
+      </div>
     </div>
-    <button onclick="pagarWA()" style="width:100%;height:42px;background:#25D366;border:none;border-radius:12px;color:#fff;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons">chat</span> Pagar deuda</button>
   </div>
   <div class="card">
     <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">list_alt</span> Mis servicios por fecha</h3>
@@ -90,7 +96,6 @@ body{background:#f6f7f9}
     <label style="font-size:11px;font-weight:800;margin-top:10px;display:block">Foto de perfil</label>
     <input type="file" id="filePerfil" accept="image/*" style="font-size:11px;margin-top:6px">
     <button class="btn" style="background:#E10600;color:#fff;height:38px;margin-top:8px" onclick="subirFoto('foto')">Subir foto</button>
-
     <label style="font-size:11px;font-weight:800;margin-top:12px;display:block">Foto de moto</label>
     <input type="file" id="fileMoto" accept="image/*" style="font-size:11px;margin-top:6px">
     <button class="btn" style="background:#111;color:#fff;height:38px;margin-top:8px" onclick="subirFoto('fotoMoto')">Subir moto</button>
@@ -98,7 +103,6 @@ body{background:#f6f7f9}
 
   <div style="margin-top:14px">
     <h4 style="font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">lock</span> Cambiar usuario y contraseña</h4>
-    <p style="font-size:10px;color:#6b7280;margin-top:4px">Se actualiza en tiempo real en Firebase /usuarios y /repartidores</p>
     <input id="cambiarUsuario" class="inp" placeholder="Nuevo usuario">
     <input id="cambiarPass" class="inp" type="password" placeholder="Nueva contraseña">
     <button onclick="actualizarCredenciales()" class="btn" style="background:#111;color:#fff;margin-top:10px"><span class="material-icons" style="font-size:16px">save</span> Actualizar credenciales</button>
@@ -107,6 +111,9 @@ body{background:#f6f7f9}
 
   <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
     <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
+    <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
+    <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pIngMes">Ingresos mes: $0</p>
+    <button onclick="pagarWA()" style="width:100%;height:38px;background:#25D366;border:none;border-radius:10px;color:#fff;font-weight:800;margin-top:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons" style="font-size:16px">chat</span> Pagar deuda</button>
   </div>
 </div>
 
@@ -157,12 +164,14 @@ function iniciar(){
   document.getElementById('pEstado').innerText='Estado: '+(repartidorActual.estado||'Activo');
   document.getElementById('cambiarUsuario').placeholder='Usuario actual: '+(repartidorActual.usuario||'');
   if(repartidorActual.foto) document.getElementById('pAvatar').src=repartidorActual.foto;
+  document.getElementById('gastoFecha').value=new Date().toISOString().slice(0,10);
   cargarVentas();
   cargarGastos();
 }
 
 let ventasAll=[];
 let gastosAll=[];
+let gastosRaw={};
 function cargarVentas(){
   db.ref('ventas').on('value', snap=>{
     const data=snap.val()||{};
@@ -188,9 +197,10 @@ function cargarVentas(){
 
 function cargarGastos(){
   db.ref(`gastos/${repartidorKey}`).on('value', snap=>{
-    const data=snap.val()||{};
-    gastosAll=Object.values(data).map(g=>({ ...g, _mes:(g.fecha||'').slice(0,7) || g.mes || '' }));
+    gastosRaw=snap.val()||{};
+    gastosAll=Object.entries(gastosRaw).map(([id,g])=>({ id, ...g, _mes:(g.fecha||'').slice(0,7) || g.mes || '' }));
     renderStats();
+    renderListaGastos();
   });
 }
 
@@ -240,26 +250,47 @@ function renderStats(){
   document.getElementById('gastosDet').innerText=listaG.length+' gastos en filtro';
   document.getElementById('totalFinal').innerText=fmt(totalFinal);
   document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): '+fmt(ingresos)+' - Gastos '+fmt(gastos)+' = '+fmt(totalFinal);
+  document.getElementById('totalListaGastos').innerText=fmt(gastos);
 
   const tbody=document.getElementById('tablaMis'); tbody.innerHTML='';
   lista.sort((a,b)=> (b._fecha||'').localeCompare(a._fecha||'')).forEach(v=>{
     tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>${fmt(v._precioCli)}</td><td>${fmt(v._tarifa)}</td><td style="color:#111">${fmt(v._ganancia)}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
   });
+  renderListaGastos();
+}
+
+function renderListaGastos(){
+  const mesSel=document.getElementById('filtroMes').value;
+  let listaG=gastosAll;
+  if(mesSel!=='todos') listaG=gastosAll.filter(g=>g._mes===mesSel || g.mes===mesSel);
+  listaG.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+  const cont=document.getElementById('listaGastos');
+  if(!listaG.length){ cont.innerHTML='<p style="font-size:11px;color:#9ca3af;text-align:center;padding:10px">Sin gastos</p>'; return; }
+  cont.innerHTML=listaG.map(g=>`
+    <div class="gasto-item">
+      <div><div style="font-size:11px;font-weight:700">${g.descripcion||'Gasto'}</div><div style="font-size:10px;color:#6b7280">${g.fecha||''}</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><b style="font-size:12px;color:#ef4444">${fmt(g.monto||0)}</b><span style="cursor:pointer;color:#9ca3af" onclick="eliminarGasto('${g.id}')">✕</span></div>
+    </div>
+  `).join('');
 }
 
 function guardarGasto(){
   const desc=document.getElementById('gastoDesc').value.trim();
   const monto=parseFloat(document.getElementById('gastoMonto').value);
+  const fecha=document.getElementById('gastoFecha').value || new Date().toISOString().slice(0,10);
   if(!desc || !monto || monto<=0){ alert('Escribe descripción y monto válido'); return; }
-  const mesSel=document.getElementById('filtroMes').value;
-  const fechaHoy=new Date().toISOString().slice(0,10);
-  const data={ descripcion:desc, monto:monto, fecha:fechaHoy, mes: mesSel==='todos'? fechaHoy.slice(0,7) : mesSel, timestamp:Date.now() };
+  const data={ descripcion:desc, monto:monto, fecha:fecha, mes: fecha.slice(0,7), timestamp:Date.now() };
   db.ref(`gastos/${repartidorKey}`).push(data).then(()=>{
     document.getElementById('gastoDesc').value='';
     document.getElementById('gastoMonto').value='';
     const m=document.getElementById('msgGasto'); m.innerText='Gasto guardado ✓'; m.style.display='block';
     setTimeout(()=>m.style.display='none',2000);
   });
+}
+
+function eliminarGasto(id){
+  if(!confirm('¿Eliminar este gasto?')) return;
+  db.ref(`gastos/${repartidorKey}/${id}`).remove();
 }
 
 function subirFoto(campo){
@@ -284,7 +315,7 @@ function actualizarCredenciales(){
     localStorage.setItem('kigo_repa_usuario', nuevoUser);
     localStorage.setItem('kigo_user', nuevoUser);
     document.getElementById('pUsuario').innerText='@'+nuevoUser;
-    document.getElementById('msgCred').innerText='Actualizado en tiempo real: ahora entrarás con '+nuevoUser+' / '+nuevaPass;
+    document.getElementById('msgCred').innerText='Actualizado: '+nuevoUser+' / '+nuevaPass;
     document.getElementById('msgCred').style.display='block';
     document.getElementById('cambiarUsuario').value='';
     document.getElementById('cambiarPass').value='';
@@ -298,7 +329,7 @@ function pagarWA(){
   const gastos=document.getElementById('gastosTotales').innerText;
   const total=document.getElementById('totalFinal').innerText;
   const mes=document.getElementById('filtroMes').value;
-  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mes: ${mes}. Mi deuda es ${debe} - ${det}. Ingresos: ${ing}, Gastos: ${gastos}, Me queda: ${total}.`;
+  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mes: ${mes}. Deuda ${debe} - ${det}. Ingresos: ${ing}, Gastos: ${gastos}, Me queda: ${total}.`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
