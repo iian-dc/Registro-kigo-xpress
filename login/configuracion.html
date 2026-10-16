@@ -60,9 +60,20 @@
 <div class="wrap">
 <div class="title">Configuración</div>
 
+<!-- NUEVA TARJETA PRECIO POR DISTANCIA TIEMPO REAL -->
 <div class="card">
-<div class="lbl">Usuarios - Usuario y Contraseña (Tiempo Real Firebase)</div>
-<div class="small" style="margin-bottom:10px">Carpeta: <b>usuarios</b> en Firebase. Todo lo que cambies aquí se actualiza al instante.</div>
+<div class="lbl">Precio por Distancia (Tiempo Real)</div>
+<div class="small" style="margin-bottom:10px">Carpeta Firebase: <b>configuracion/precios</b>. Cambia aquí y Cotizaciones se actualiza al instante.<br>Fórmula: <b>Precio = Base + (Km × Precio/Km)</b></div>
+<div class="grid2">
+<div><div class="lbl">Base $</div><input id="basePrecio" type="number" class="inp" placeholder="15"></div>
+<div><div class="lbl">Precio por Km $</div><input id="kmPrecio" type="number" class="inp" placeholder="8"></div>
+</div>
+<button class="btn-save" onclick="guardarPrecios()">Guardar Precios</button>
+</div>
+
+<div class="card">
+<div class="lbl">Usuarios - Usuario y Contraseña (Tiempo Real)</div>
+<div class="small" style="margin-bottom:10px">Carpeta: <b>usuarios</b></div>
 <div id="listaUsuarios"></div>
 </div>
 
@@ -79,9 +90,22 @@ if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='index.html'; }
 function cerrarSesion(){ localStorage.clear(); location.href='index.html'; }
 function openM(){ document.getElementById('menu').classList.add('open'); document.getElementById('menuBg').classList.add('open'); }
 function closeM(){ document.getElementById('menu').classList.remove('open'); document.getElementById('menuBg').classList.remove('open'); }
-function showToast(){ const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function showToast(m){ const t=document.getElementById('toast'); t.innerText=m||'Actualizado ✓'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
 
-// LEER EN TIEMPO REAL DE LA CARPETA usuarios
+// PRECIOS TIEMPO REAL
+db.ref('configuracion/precios').on('value', snap=>{
+  const p=snap.val()||{ base:15, km:8 };
+  document.getElementById('basePrecio').value=p.base;
+  document.getElementById('kmPrecio').value=p.km;
+});
+
+function guardarPrecios(){
+  const base=parseFloat(document.getElementById('basePrecio').value)||0;
+  const km=parseFloat(document.getElementById('kmPrecio').value)||0;
+  db.ref('configuracion/precios').set({ base, km, updatedAt:Date.now() }).then(()=>showToast('Precios guardados ✓'));
+}
+
+// USUARIOS TIEMPO REAL
 let usuariosCache = {};
 db.ref('usuarios').on('value', snap=>{
   usuariosCache = snap.val() || {};
@@ -110,20 +134,14 @@ function renderUsuarios(){
       </div>
     `;
   });
-  if(Object.keys(usuariosCache).length===0) cont.innerHTML='<div class="small">No hay usuarios en la carpeta <b>usuarios</b></div>';
+  if(Object.keys(usuariosCache).length===0) cont.innerHTML='<div class="small">No hay usuarios en <b>usuarios</b></div>';
 }
 
 function actualizarUsuario(id){
   const usuario = document.getElementById(`u_${id}`).value.trim();
   const contraseña = document.getElementById(`p_${id}`).value.trim();
   if(!usuario || !contraseña) return alert('Usuario y contraseña requeridos');
-  db.ref('usuarios/'+id).update({
-    usuario: usuario,
-    contraseña: contraseña,
-    password: contraseña,
-    user: usuario,
-    updatedAt: Date.now()
-  }).then(()=>showToast());
+  db.ref('usuarios/'+id).update({ usuario, contraseña, password:contraseña, user:usuario, updatedAt:Date.now() }).then(()=>showToast());
 }
 </script>
 </body>
