@@ -279,3 +279,51 @@ function render(){
     }
   }
 }
+function abrirEditar(nombre){
+  const c=clientes.find(x=>x.nombre===nombre);
+  if(!c) return;
+  editKey=c.nombre;
+  document.getElementById('eNombre').value=c.nombre;
+  document.getElementById('eTelefono').value=c.telefono||'';
+  document.getElementById('eDireccion').value=c.direccion||'';
+  document.getElementById('eEstado').value=c.estado||'Activo';
+  document.getElementById('eInfo').innerHTML=`<b>Historial organizado por fecha:</b><br>${c.total} pedidos | Total: $${c.totalDinero.toFixed(0)}<br>Último: ${formatFecha(c.ultimo)}<br>Fechas: ${c.historial.slice(0,3).map(h=>formatFecha(h.fecha)+' ($'+h.valor+')').join(', ')}`;
+  document.getElementById('modalEdit').classList.add('open');
+}
+function cerrarModal(){ document.getElementById('modalEdit').classList.remove('open'); editKey=null; }
+function guardarEdicion(){
+  const nuevoNombre=document.getElementById('eNombre').value.trim();
+  const tel=document.getElementById('eTelefono').value.trim();
+  const dir=document.getElementById('eDireccion').value.trim();
+  const est=document.getElementById('eEstado').value;
+  if(!nuevoNombre) return;
+  db.ref('ventas').once('value', snap=>{
+    const v=snap.val()||{};
+    const upd={};
+    Object.entries(v).forEach(([id, p])=>{
+      if(normalizarCliente(p.cliente||'').toLowerCase()===editKey.toLowerCase()){
+        upd[id+'/cliente']=nuevoNombre;
+        if(tel) upd[id+'/telefono']=tel;
+        if(dir) upd[id+'/direccion']=dir;
+      }
+    });
+    if(Object.keys(upd).length>0) db.ref('ventas').update(upd);
+    db.ref('clientes/'+nuevoNombre.replace(/[.#$/[\]]/g,'_')).update({nombre:nuevoNombre, telefono:tel, direccion:dir, estado:est});
+    cerrarModal();
+  });
+}
+function eliminarCliente(nombre){
+  if(!confirm('¿Eliminar cliente '+nombre+' y todos sus pedidos?')) return;
+  db.ref('ventas').once('value', snap=>{
+    const v=snap.val()||{};
+    const del={};
+    Object.entries(v).forEach(([id, p])=>{
+      if(normalizarCliente(p.cliente||'').toLowerCase()===nombre.toLowerCase()) del[id]=null;
+    });
+    if(Object.keys(del).length>0) db.ref('ventas').update(del);
+    db.ref('clientes/'+nombre.replace(/[.#$/[\]]/g,'_')).remove();
+  });
+}
+function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtrados.length/porPag)); pagina=Math.min(max,Math.max(1,pagina+d)); render(); }
+document.getElementById('buscar').addEventListener('input',aplicarFiltros);
+document.getElementById('fMes').addEventListener('change',aplicarFiltros);
