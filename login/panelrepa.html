@@ -12,12 +12,6 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',sans-serif}
 body{background:#f6f7f9}
-.material-icons{vertical-align:middle}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.login-card{background:#fff;width:100%;max-width:380px;border-radius:20px;padding:28px;border:1px solid #eef0f3;box-shadow:0 10px 30px rgba(0,0,0,.06)}
-.login-card h1{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px}
-.inp{width:100%;height:46px;border:1px solid #e5e7eb;border-radius:12px;padding:0 14px;margin-top:12px;font-weight:700;font-size:14px;outline:none}
-.btn{width:100%;height:46px;background:#E10600;border:none;color:#fff;border-radius:12px;font-weight:800;margin-top:16px;cursor:pointer}
 .top{max-width:1100px;margin:0 auto;padding:16px;display:flex;justify-content:space-between;align-items:center}
 .cards{max-width:1100px;margin:10px auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:0 16px}
 .card{background:#fff;border:1px solid #eef0f3;border-radius:16px;padding:18px}
@@ -32,56 +26,45 @@ body{background:#f6f7f9}
 .badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;display:inline-flex;align-items:center;gap:4px}
 .badge.pendiente{background:#fef3c7;color:#92400e}
 .badge.pagado{background:#dcfce7;color:#166534}
-.hidden{display:none}
-.file{font-size:11px;margin-top:8px}
 </style>
 </head>
 <body>
 
-<div id="loginView" class="login-wrap">
-  <div class="login-card">
-    <h1><span class="material-icons" style="color:#E10600">two_wheeler</span> Panel Repartidor</h1>
-    <p style="font-size:12px;color:#6b7280;margin-top:6px">Ingresa con tu usuario de repartidor</p>
-    <input id="user" class="inp" placeholder="Usuario">
-    <input id="pass" class="inp" type="password" placeholder="Contraseña">
-    <button class="btn" onclick="login()"><span class="material-icons" style="font-size:18px">login</span> Entrar</button>
-    <p id="loginError" style="font-size:11px;color:#E10600;margin-top:10px;display:none"></p>
+<div class="top">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img id="pAvatar" class="avatar" src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png">
+    <div><b id="pNombre" style="font-size:18px">Cargando...</b><p style="font-size:11px;color:#6b7280" id="pMoto"></p><p style="font-size:11px;color:#6b7280" id="pUsuario"></p></div>
   </div>
+  <button onclick="logout()" style="height:38px;padding:0 14px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons">logout</span> Salir</button>
 </div>
 
-<div id="panelView" class="hidden">
-  <div class="top">
-    <div style="display:flex;align-items:center;gap:12px"><img id="pAvatar" class="avatar" src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png"><div><b id="pNombre" style="font-size:18px">Jose</b><p style="font-size:11px;color:#6b7280" id="pMoto">Moto</p></div></div>
-    <button onclick="logout()" style="height:38px;padding:0 14px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons">logout</span> Salir</button>
-  </div>
+<div class="cards">
+  <div class="card" style="border-left:4px solid #f59e0b"><small>CUANTO DEBES</small><b id="debe" style="color:#d97706">$0</b><small id="debeDet">0 mandados / 0 transportes</small></div>
+  <div class="card" style="border-left:4px solid #16a34a"><small>YA PAGADO (EN CAJA)</small><b id="pagado" style="color:#16a34a">$0</b></div>
+  <div class="card"><small>SERVICIOS TOTALES</small><b id="totalServ">0</b></div>
+  <div class="card"><small>VALOR CLIENTES TOTAL</small><b id="valorCli">$0</b></div>
+</div>
 
-  <div class="cards">
-    <div class="card" style="border-left:4px solid #f59e0b"><small><span class="material-icons" style="font-size:14px">warning</span> CUANTO DEBES</small><b id="debe" style="color:#d97706">$0</b><small id="debeDet">0 mandados / 0 transportes</small></div>
-    <div class="card" style="border-left:4px solid #16a34a"><small><span class="material-icons" style="font-size:14px">savings</span> YA PAGADO</small><b id="pagado" style="color:#16a34a">$0</b></div>
-    <div class="card"><small><span class="material-icons" style="font-size:14px">receipt_long</span> SERVICIOS TOTALES</small><b id="totalServ">0</b></div>
-    <div class="card"><small><span class="material-icons" style="font-size:14px">payments</span> VALOR CLIENTES</small><b id="valorCli">$0</b></div>
-  </div>
+<div class="profile">
+  <div class="card">
+    <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">person</span> Mi perfil</h3>
+    <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de perfil</label>
+    <input type="file" id="filePerfil" accept="image/*" style="font-size:11px;margin-top:6px">
+    <button style="width:100%;height:38px;background:#E10600;border:none;color:#fff;border-radius:10px;font-weight:800;margin-top:8px;cursor:pointer" onclick="subirFoto('foto')">Subir foto</button>
 
-  <div class="profile">
-    <div class="card">
-      <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">person</span> Mi perfil</h3>
-      <p style="font-size:11px;color:#6b7280;margin-top:8px">Cambia tu foto, se guarda en Firebase</p>
-      <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de perfil</label>
-      <input type="file" id="filePerfil" accept="image/*" class="file">
-      <button class="btn" style="height:38px;margin-top:8px" onclick="subirFoto('foto')"><span class="material-icons" style="font-size:16px">upload</span> Subir perfil</button>
-      <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de moto</label>
-      <input type="file" id="fileMoto" accept="image/*" class="file">
-      <button class="btn" style="height:38px;margin-top:8px;background:#111" onclick="subirFoto('fotoMoto')"><span class="material-icons" style="font-size:16px">two_wheeler</span> Subir moto</button>
-      <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
-        <p style="font-size:11px;font-weight:800">Tarifa: Moto mandado $5 / Transporte $10</p>
-        <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
-      </div>
-      <button onclick="pagarWA()" style="width:100%;height:42px;background:#25D366;border:none;border-radius:12px;color:#fff;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons">chat</span> Pagar deuda por WhatsApp</button>
+    <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de moto</label>
+    <input type="file" id="fileMoto" accept="image/*" style="font-size:11px;margin-top:6px">
+    <button style="width:100%;height:38px;background:#111;border:none;color:#fff;border-radius:10px;font-weight:800;margin-top:8px;cursor:pointer" onclick="subirFoto('fotoMoto')">Subir moto</button>
+
+    <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
+      <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
+      <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
     </div>
-    <div class="card">
-      <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">list_alt</span> Mis servicios</h3>
-      <table class="table"><thead><tr><th>Fecha</th><th>Servicio</th><th>Cliente $</th><th>Mi tarifa</th><th>Estado</th></tr></thead><tbody id="tablaMis"></tbody></table>
-    </div>
+    <button onclick="pagarWA()" style="width:100%;height:42px;background:#25D366;border:none;border-radius:12px;color:#fff;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons">chat</span> Pagar deuda</button>
+  </div>
+  <div class="card">
+    <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">list_alt</span> Mis servicios por fecha</h3>
+    <table class="table"><thead><tr><th>Fecha</th><th>Servicio</th><th>Cliente $</th><th>Tarifa Kigo</th><th>Estado</th></tr></thead><tbody id="tablaMis"></tbody></table>
   </div>
 </div>
 
@@ -90,46 +73,53 @@ const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", auth
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 const storage=firebase.storage();
-let repartidorActual=null;
-let repartidorKey=null;
-let ventasAll=[];
 
-function login(){
-  const u=document.getElementById('user').value.trim().toLowerCase();
-  const p=document.getElementById('pass').value.trim();
-  if(!u||!p){ showErr('Completa usuario y contraseña'); return; }
+let repartidorActual=null;
+let repartidorKey=localStorage.getItem('kigo_repa_key');
+let repartidorNombre=localStorage.getItem('kigo_repa_nombre');
+
+// Si no viene de login, lo regresamos
+if(!repartidorKey &&!repartidorNombre){
+  alert('Debes iniciar sesión desde el login');
+  window.location.href='login.html'; // o index.html donde está tu login
+}
+
+if(repartidorKey){
+  db.ref(`repartidores/${repartidorKey}`).once('value', s=>{
+    if(s.val()){ repartidorActual=s.val(); iniciar(); }
+    else buscarPorNombre();
+  });
+} else {
+  buscarPorNombre();
+}
+
+function buscarPorNombre(){
   db.ref('repartidores').once('value', snap=>{
     const data=snap.val()||{};
-    let found=null, keyFound=null;
     Object.keys(data).forEach(k=>{
       const r=data[k];
-      const userDb=(r.usuario||r.user||r.nombre||'').toString().toLowerCase();
-      const passDb=(r.contraseña||r.password||r.pass||r.clave||'').toString();
-      if(userDb===u && passDb===p){ found=r; keyFound=k; }
+      if((r.nombre||'').toLowerCase()=== (repartidorNombre||'').toLowerCase()){
+        repartidorActual=r; repartidorKey=k;
+      }
     });
-    if(!found){ showErr('Usuario o contraseña incorrectos'); return; }
-    repartidorActual=found; repartidorKey=keyFound;
-    localStorage.setItem('kigo_repa_key', keyFound);
-    iniciarPanel();
+    if(repartidorActual) iniciar();
   });
 }
 
-function showErr(t){ const e=document.getElementById('loginError'); e.innerText=t; e.style.display='block'; }
-
-function iniciarPanel(){
-  document.getElementById('loginView').classList.add('hidden');
-  document.getElementById('panelView').classList.remove('hidden');
-  document.getElementById('pNombre').innerText=repartidorActual.nombre||repartidorActual.usuario||'Repartidor';
-  document.getElementById('pMoto').innerText=repartidorActual.moto||'Moto';
+function iniciar(){
+  document.getElementById('pNombre').innerText=repartidorActual.nombre||'Repartidor';
+  document.getElementById('pMoto').innerText=repartidorActual.moto||'';
+  document.getElementById('pUsuario').innerText='@'+(repartidorActual.usuario||repartidorActual.nombre||'');
   document.getElementById('pEstado').innerText='Estado: '+(repartidorActual.estado||'Activo');
   if(repartidorActual.foto) document.getElementById('pAvatar').src=repartidorActual.foto;
   cargarVentas();
 }
 
+let ventasAll=[];
 function cargarVentas(){
   db.ref('ventas').on('value', snap=>{
     const data=snap.val()||{};
-    const nombre = (repartidorActual.nombre||repartidorActual.usuario||'').toLowerCase();
+    const nombre=(repartidorActual.nombre||'').toLowerCase();
     ventasAll=Object.values(data).filter(v=>{
       const rep=(v.repartidor||v.nombreRepartidor||'').toLowerCase();
       return rep===nombre || rep.includes(nombre);
@@ -160,7 +150,7 @@ function renderStats(){
 
   const tbody=document.getElementById('tablaMis'); tbody.innerHTML='';
   ventasAll.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'')).forEach(v=>{
-    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td><span class="material-icons" style="font-size:16px">${v._esTrans?'local_shipping':'two_wheeler'}</span> ${v._esTrans?'transporte':'mandado'}</td><td>$${v._precioCli}</td><td>$${v._tarifa}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
+    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>$${v._precioCli}</td><td>$${v._tarifa}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
   });
 }
 
@@ -171,27 +161,20 @@ function subirFoto(campo){
   const ref=storage.ref(`repartidores/${repartidorKey}/${campo}_${Date.now()}`);
   ref.put(file).then(s=>s.ref.getDownloadURL()).then(url=>{
     return db.ref(`repartidores/${repartidorKey}/${campo}`).set(url);
-  }).then(()=>{
-    alert('Foto actualizada');
-    if(campo==='foto') document.getElementById('pAvatar').src=URL.createObjectURL(file);
-  });
+  }).then(()=>{ alert('Foto actualizada'); location.reload(); });
 }
 
 function pagarWA(){
   const debe=document.getElementById('debe').innerText;
   const det=document.getElementById('debeDet').innerText;
-  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mi deuda es ${debe} - ${det}. Quiero pagar.`;
+  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mi deuda es ${debe} - ${det}.`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
-function logout(){ localStorage.removeItem('kigo_repa_key'); location.reload(); }
-
-// Auto login si ya estaba
-const savedKey=localStorage.getItem('kigo_repa_key');
-if(savedKey){
-  db.ref(`repartidores/${savedKey}`).once('value', s=>{
-    if(s.val()){ repartidorActual=s.val(); repartidorKey=savedKey; iniciarPanel(); }
-  });
+function logout(){
+  localStorage.removeItem('kigo_repa_key');
+  localStorage.removeItem('kigo_repa_nombre');
+  window.location.href='login.html';
 }
 </script>
 </body>
