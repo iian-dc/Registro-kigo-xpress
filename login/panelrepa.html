@@ -26,6 +26,7 @@ body{background:#f6f7f9}
 .badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;display:inline-flex;align-items:center;gap:4px}
 .badge.pendiente{background:#fef3c7;color:#92400e}
 .badge.pagado{background:#dcfce7;color:#166534}
+.inp{width:100%;height:40px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;margin-top:8px;font-size:12px;font-weight:600;outline:none}
 </style>
 </head>
 <body>
@@ -59,6 +60,15 @@ body{background:#f6f7f9}
     <input type="file" id="fileMoto" accept="image/*" style="font-size:11px;margin-top:6px">
     <button style="width:100%;height:38px;background:#111;border:none;color:#fff;border-radius:10px;font-weight:800;margin-top:8px;cursor:pointer" onclick="subirFoto('fotoMoto')">Subir moto</button>
 
+    <div style="margin-top:16px;border-top:1px solid #eef0f3;padding-top:14px">
+      <h3 style="font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">lock</span> Cambiar usuario y contraseña</h3>
+      <p style="font-size:10px;color:#6b7280;margin-top:4px">Se actualiza en tiempo real en Firebase</p>
+      <input id="cambiarUsuario" class="inp" placeholder="Nuevo usuario">
+      <input id="cambiarPass" class="inp" type="password" placeholder="Nueva contraseña">
+      <button onclick="actualizarCredenciales()" style="width:100%;height:40px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:800;margin-top:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons" style="font-size:16px">save</span> Actualizar credenciales</button>
+      <p id="msgCred" style="font-size:11px;color:#16a34a;margin-top:8px;display:none"></p>
+    </div>
+
     <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
       <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
       <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
@@ -84,7 +94,7 @@ let repartidorNombre=localStorage.getItem('kigo_repa_nombre');
 
 if(!repartidorKey &&!repartidorNombre){
   alert('Debes iniciar sesión desde el login');
-  window.location.href='login.html';
+  window.location.href='index.html';
 }
 
 if(repartidorKey){
@@ -114,6 +124,7 @@ function iniciar(){
   document.getElementById('pMoto').innerText=repartidorActual.moto||'';
   document.getElementById('pUsuario').innerText='@'+(repartidorActual.usuario||repartidorActual.nombre||'');
   document.getElementById('pEstado').innerText='Estado: '+(repartidorActual.estado||'Activo');
+  document.getElementById('cambiarUsuario').placeholder='Usuario actual: '+(repartidorActual.usuario||'');
   if(repartidorActual.foto) document.getElementById('pAvatar').src=repartidorActual.foto;
   cargarVentas();
 }
@@ -155,6 +166,8 @@ function initFiltroMes(){
   if(actual) sel.value=actual;
 }
 
+function fmt(n){ return '$'+Number(n).toLocaleString('es-MX'); }
+
 function renderStats(){
   const mesSel=document.getElementById('filtroMes').value;
   let lista=ventasAll;
@@ -167,17 +180,17 @@ function renderStats(){
     else if(v._estado==='pagado'){ pagado+=v._tarifa; }
   });
 
-  document.getElementById('debe').innerText='$'+debe;
+  document.getElementById('debe').innerText=fmt(debe);
   document.getElementById('debeDet').innerText=mandados+' mandados x $5 / '+transportes+' transportes x $10';
-  document.getElementById('pagado').innerText='$'+pagado;
-  document.getElementById('totalServ').innerText=lista.length;
+  document.getElementById('pagado').innerText=fmt(pagado);
+  document.getElementById('totalServ').innerText=lista.length.toLocaleString('es-MX');
   document.getElementById('mesDet').innerText= mesSel==='todos'? lista.length+' total' : lista.length+' en '+mesSel;
-  document.getElementById('ingresosTotales').innerText='$'+ingresos;
-  document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): $'+ingresos;
+  document.getElementById('ingresosTotales').innerText=fmt(ingresos);
+  document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): '+fmt(ingresos);
 
   const tbody=document.getElementById('tablaMis'); tbody.innerHTML='';
   lista.sort((a,b)=> (b._fecha||'').localeCompare(a._fecha||'')).forEach(v=>{
-    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>$${v._precioCli}</td><td>$${v._tarifa}</td><td style="color:#111">$${v._ganancia}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
+    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>${fmt(v._precioCli)}</td><td>${fmt(v._tarifa)}</td><td style="color:#111">${fmt(v._ganancia)}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
   });
 }
 
@@ -189,6 +202,25 @@ function subirFoto(campo){
   ref.put(file).then(s=>s.ref.getDownloadURL()).then(url=>{
     return db.ref(`repartidores/${repartidorKey}/${campo}`).set(url);
   }).then(()=>{ alert('Foto actualizada'); location.reload(); });
+}
+
+function actualizarCredenciales(){
+  const nuevoUser=document.getElementById('cambiarUsuario').value.trim();
+  const nuevaPass=document.getElementById('cambiarPass').value.trim();
+  if(!nuevoUser ||!nuevaPass){ alert('Escribe nuevo usuario y nueva contraseña'); return; }
+  db.ref(`repartidores/${repartidorKey}`).update({
+    usuario: nuevoUser,
+    contraseña: nuevaPass,
+    password: nuevaPass
+  }).then(()=>{
+    localStorage.setItem('kigo_repa_usuario', nuevoUser);
+    localStorage.setItem('kigo_user', nuevoUser);
+    document.getElementById('pUsuario').innerText='@'+nuevoUser;
+    document.getElementById('msgCred').innerText='Actualizado en tiempo real: ahora entrarás con '+nuevoUser+' / '+nuevaPass;
+    document.getElementById('msgCred').style.display='block';
+    document.getElementById('cambiarUsuario').value='';
+    document.getElementById('cambiarPass').value='';
+  });
 }
 
 function pagarWA(){
@@ -203,7 +235,10 @@ function pagarWA(){
 function logout(){
   localStorage.removeItem('kigo_repa_key');
   localStorage.removeItem('kigo_repa_nombre');
-  window.location.href='login.html';
+  localStorage.removeItem('kigo_repa_usuario');
+  localStorage.removeItem('kigo_user');
+  localStorage.removeItem('kigo_nombre');
+  window.location.href='index.html';
 }
 </script>
 </body>
