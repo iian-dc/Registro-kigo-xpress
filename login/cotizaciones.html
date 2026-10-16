@@ -52,13 +52,11 @@ body{background:#f8f9fb;zoom:0.9}
     <button class="btn-tipo servicio active" id="btnRecoger" onclick="setServicio('recoger')">A recoger</button>
     <button class="btn-tipo servicio" id="btnComprar" onclick="setServicio('comprar')">Comprar</button>
   </div>
-
   <div class="info-row">
     <div class="info"><span>Distancia</span><b id="distancia">--</b></div>
     <div class="info"><span>Tiempo</span><b id="tiempo">--</b></div>
     <div class="info"><span>Precio</span><b id="precioLabel">$0</b></div>
   </div>
-
   <div id="formAliadosRecoger">
     <label class="label">Nombre de aliado</label>
     <div class="input-box" style="overflow:visible">
@@ -67,22 +65,17 @@ body{background:#f8f9fb;zoom:0.9}
       <div class="sugList" id="sugAliados"></div>
     </div>
     <div id="aliadoInfo" style="display:none"><div class="info" style="text-align:left;margin-top:10px"><span>Dirección del aliado</span><b id="aliadoDireccion">-</b></div></div>
-
     <label class="label">Dirección de entrega</label>
     <div class="input-box">
       <input id="deliveryAliado" placeholder="Escribe dirección de entrega..." oninput="toggleClear('deliveryAliado','clearDelA')">
       <button class="btn-clear" id="clearDelA" onclick="limpiar('deliveryAliado','clearDelA')">✕</button>
     </div>
-
     <label class="label">Nombre de quien recibe</label>
     <div class="input-box"><input id="nombreRecibe" placeholder="Nombre de quien recibe"></div>
-
     <label class="label">Número de teléfono de quien recibe</label>
     <div class="input-box"><input id="telRecibe" placeholder="418 123 4567"></div>
-
     <label class="label">Precio sugerido</label>
     <div class="input-box"><input id="precioAliado" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
-
     <label class="label">Tiempo estimado de recoger</label>
     <div class="tiempoRow">
       <button class="tiempoBtn" onclick="setTiempo(5,this)">5 min</button>
@@ -92,20 +85,17 @@ body{background:#f8f9fb;zoom:0.9}
     </div>
     <div class="input-box" style="margin-top:8px"><input id="tiempoManual" placeholder="Escribe tiempo manual..."></div>
   </div>
-
   <div class="botones">
     <button class="btn btn-cotiza" onclick="enviarCotizacion()">Enviar cotización al cliente</button>
     <button class="btn btn-pedido" onclick="enviarPedido()">Enviar pedido al repartidor</button>
   </div>
 </div>
 </div>
-
 <script>
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 let map, directionsService, directionsRenderer, clientesLista=[], distanciaKm=0, tiempoMin=0, precioCalc=0, tipo='aliados', servicio='recoger', markerPickup=null, markerDelivery=null, autoDeliveryAliado;
-
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
@@ -113,11 +103,8 @@ function initMap(){
   autoDeliveryAliado = new google.maps.places.Autocomplete(document.getElementById("deliveryAliado"), { componentRestrictions: { country: "mx" }, fields: ["formatted_address","geometry"] });
   autoDeliveryAliado.addListener("place_changed", ()=>{
     const place = autoDeliveryAliado.getPlace();
-    if(place && place.formatted_address){
-      document.getElementById("deliveryAliado").value = place.formatted_address;
-    }
-    toggleClear('deliveryAliado','clearDelA');
-    calcularRutaAliado();
+    if(place && place.formatted_address){ document.getElementById("deliveryAliado").value = place.formatted_address; }
+    toggleClear('deliveryAliado','clearDelA'); calcularRutaAliado();
   });
   cargarClientes();
 }
@@ -146,7 +133,6 @@ function buscarAliado(){
 function toggleClear(i,b){ document.getElementById(b).classList.toggle('show', document.getElementById(i).value.length>0); }
 function limpiar(id, btn){ document.getElementById(id).value=''; document.getElementById(btn).classList.remove('show'); if(id==='deliveryAliado'){ directionsRenderer.setDirections({routes:[]}); if(markerPickup) markerPickup.setMap(null); if(markerDelivery) markerDelivery.setMap(null); } }
 function setTiempo(min, el){ document.querySelectorAll('.tiempoBtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); document.getElementById('tiempoManual').value=min+' min'; }
-
 function calcularRutaAliado(){
   const origen=document.getElementById('aliadoDireccion').innerText;
   const destino=document.getElementById('deliveryAliado').value;
@@ -166,38 +152,16 @@ function calcularRutaAliado(){
     }
   });
 }
-
 function enviarCotizacion(){
-  const aliado=document.getElementById('aliadoNombre').value.trim();
   const dirAliado=document.getElementById('aliadoDireccion').innerText;
   const entrega=document.getElementById('deliveryAliado').value.trim();
   const precio=document.getElementById('precioAliado').value;
-  if(!aliado||!entrega){ alert('Completa aliado y entrega'); return; }
-
-  const datos={ tipo, servicio, aliado, dirAliado, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  if(!dirAliado||!entrega){ alert('Completa aliado y entrega'); return; }
+  const datos={ tipo, servicio, dirAliado, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
   db.ref('cotizaciones').push(datos);
-
-  const msg = 
-`🏍️ *KIGO XPRESS* 🏍️
-━━━━━━━━━━━━━━━
-📦 *COTIZACIÓN DE ENVÍO*
-
-📍 *Dirección de recogida:*
-${dirAliado}
-
-🏠 *Dirección de entrega:*
-${entrega}
-
-💰 *Valor del servicio:* $${precio}
-
-🛣️ *Kilómetros recorridos:* ${distanciaKm.toFixed(1)} km
-
-━━━━━━━━━━━━━━━
-¿Confirmamos el servicio? ✅`;
-
+  const msg = `🏍️ *KIGO XPRESS* 🏍️\n━━━━━━━━━━━━━━━\n📦 *COTIZACIÓN DE ENVÍO*\n\n📍 *Dirección de recogida:*\n${dirAliado}\n\n🏠 *Dirección de entrega:*\n${entrega}\n\n💰 *Valor del servicio:* $${precio}\n\n🛣️ *Kilómetros recorridos:* ${distanciaKm.toFixed(1)} km\n\n━━━━━━━━━━━━━━━\n¿Confirmamos el servicio? ✅`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
-
 function enviarPedido(){
   const aliado=document.getElementById('aliadoNombre').value.trim();
   const dirAliado=document.getElementById('aliadoDireccion').innerText;
@@ -205,23 +169,32 @@ function enviarPedido(){
   const nombreR=document.getElementById('nombreRecibe').value.trim();
   const telR=document.getElementById('telRecibe').value.trim();
   const precio=document.getElementById('precioAliado').value;
-  const tRec=document.getElementById('tiempoManual').value;
+  const tRec=document.getElementById('tiempoManual').value || 'por confirmar';
   if(!aliado||!entrega){ alert('Completa datos'); return; }
-
   const datos={ tipo, servicio, cliente:aliado, direccionRecogida:dirAliado, direccion:entrega, nombreRecibe:nombreR, telefono:telR, precio, tiempoRecoger:tRec, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'pendiente' };
   db.ref('ventas').push(datos);
   db.ref('pedidos_repartidor').push(datos);
-
+  const numeroPedido = Math.floor(1000 + Math.random() * 9000);
   const msgRep = 
-`🚀 *NUEVO PEDIDO - KIGO XPRESS*
+`🚨 #${numeroPedido}
+📍 Recoger
+👤 ${aliado}
+⏱️ Recoger en "${tRec}"
 
-👤 *Aliado:* ${aliado}
-📦 *Recoger en:* ${dirAliado}
-🏠 *Entregar a:* ${nombreR} - ${telR}
-📍 *Dirección entrega:* ${entrega}
-⏱️ *Tiempo recoger:* ${tRec}
-🛣️ *Distancia:* ${distanciaKm.toFixed(1)} km
-💰 *Precio:* $${precio}
+📍 Dirección del aliado:
+${dirAliado}
+
+🏠 Dirección de entrega:
+${entrega}
+
+👤 Nombre del cliente:
+${nombreR}
+
+📞 Número de teléfono:
+${telR}
+
+💰 Valor del servicio:
+$${precio}
 
 🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
 
