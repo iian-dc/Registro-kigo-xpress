@@ -13,14 +13,14 @@ body{background:#f8f9fb;zoom:0.9}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #eef0f3;position:sticky;top:0;z-index:50}
 .btn-x{width:36px;height:36px;background:#E10600;border:none;color:#fff;border-radius:10px;font-weight:900;font-size:18px;cursor:pointer}
 .title h1{font-size:18px;font-weight:800}
-.title p{font-size:11px;color:#6b7280}
 #map{width:100%;height:360px;background:#e5e7eb}
 .container{padding:14px;max-width:800px;margin:0 auto}
 .card{background:#fff;border:1px solid #eef0f3;border-radius:16px;padding:18px}
 .tipoRow{display:flex;gap:10px;margin-bottom:10px}
-.btn-tipo{flex:1;height:46px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.btn-tipo.active{background:#E10600;color:#fff;border-color:#E10600}
-.btn-tipo.active.nuevo{background:#111;color:#fff}
+.btn-tipo{flex:1;height:46px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:#6b7280}
+.btn-tipo.tipo.active{background:#E10600;color:#fff;border-color:#E10600}
+.btn-tipo.servicio.active{background:#e5e7eb;color:#111;border-color:#e5e7eb}
+.iconSvg{width:18px;height:18px}
 .info-row{display:flex;gap:8px;margin:12px 0}
 .info{flex:1;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:8px;font-size:10px;text-align:center}
 .info b{font-size:12px;display:block;color:#111}
@@ -43,20 +43,28 @@ body{background:#f8f9fb;zoom:0.9}
 <body>
 <div class="topbar">
   <button class="btn-x" onclick="location.href='admin.html'">✕</button>
-  <div class="title"><h1>Cotizaciones</h1><p>Kigo Xpress</p></div>
+  <div class="title"><h1>Cotizaciones</h1></div>
 </div>
 <div id="map"></div>
 <div class="container">
 <div class="card">
-  <!-- FILA 1 -->
+  <!-- TIPO DE CLIENTE -->
   <div class="tipoRow">
-    <button class="btn-tipo" id="btnAliados" onclick="cambiarModo('aliados')">🤝 Aliados</button>
-    <button class="btn-tipo nuevo" id="btnNuevo" onclick="cambiarModo('nuevo')">👤 Cliente nuevo</button>
+    <button class="btn-tipo tipo active" id="btnAliados" onclick="setTipo('aliados')">
+      <svg class="iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Aliados
+    </button>
+    <button class="btn-tipo tipo" id="btnNuevo" onclick="setTipo('nuevo')">
+      <svg class="iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Cliente nuevo
+    </button>
   </div>
-  <!-- FILA 2 -->
+  <!-- SERVICIO -->
   <div class="tipoRow">
-    <button class="btn-tipo active" id="btnRecoger" onclick="cambiarModo('recoger')">📦 A recoger</button>
-    <button class="btn-tipo" id="btnComprar" onclick="cambiarModo('comprar')">🛒 Comprar</button>
+    <button class="btn-tipo servicio active" id="btnRecoger" onclick="setServicio('recoger')">
+      <svg class="iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l-4-4-4 4"/><path d="M12 12v8"/><path d="M20 8H4a2 2 0 0 1-2-2V4h20v2a2 2 0 0 1-2 2z"/></svg> A recoger
+    </button>
+    <button class="btn-tipo servicio" id="btnComprar" onclick="setServicio('comprar')">
+      <svg class="iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg> Comprar
+    </button>
   </div>
 
   <div class="info-row">
@@ -65,8 +73,8 @@ body{background:#f8f9fb;zoom:0.9}
     <div class="info"><span>Precio</span><b id="precioLabel">$0</b></div>
   </div>
 
-  <!-- FORM A RECOGER = ALIADOS RECOGER -->
-  <div id="formRecoger">
+  <!-- FORMULARIOS 4 COMBINACIONES -->
+  <div id="formAliadosRecoger">
     <label class="label">Nombre de aliado</label>
     <div class="input-box" style="overflow:visible">
       <input id="aliadoNombre" placeholder="Escribe nombre del aliado..." oninput="buscarAliado()">
@@ -74,22 +82,14 @@ body{background:#f8f9fb;zoom:0.9}
       <div class="sugList" id="sugAliados"></div>
     </div>
     <div id="aliadoInfo" style="display:none"><div class="info" style="text-align:left;margin-top:10px"><span>Dirección del aliado</span><b id="aliadoDireccion">-</b></div></div>
-
     <label class="label">Dirección de entrega</label>
-    <div class="input-box">
-      <input id="deliveryAliado" placeholder="Dirección de entrega...">
-      <button class="btn-clear" id="clearDelA" onclick="limpiar('deliveryAliado','clearDelA')">✕</button>
-    </div>
-
+    <div class="input-box"><input id="deliveryAliado" placeholder="Dirección de entrega..."></div>
     <label class="label">Nombre de quien recibe</label>
     <div class="input-box"><input id="nombreRecibe" placeholder="Nombre de quien recibe"></div>
-
     <label class="label">Número de teléfono de quien recibe</label>
     <div class="input-box"><input id="telRecibe" placeholder="418 123 4567"></div>
-
     <label class="label">Precio sugerido</label>
     <div class="input-box"><input id="precioAliado" type="number" placeholder="$0" oninput="document.getElementById('precioLabel').innerText='$'+this.value"></div>
-
     <label class="label">Tiempo estimado de recoger</label>
     <div class="tiempoRow">
       <button class="tiempoBtn" onclick="setTiempo(5,this)">5 min</button>
@@ -97,24 +97,32 @@ body{background:#f8f9fb;zoom:0.9}
       <button class="tiempoBtn" onclick="setTiempo(15,this)">15 min</button>
       <button class="tiempoBtn" onclick="setTiempo(20,this)">20 min</button>
     </div>
-    <div class="input-box" style="margin-top:8px"><input id="tiempoManual" placeholder="Escribe tiempo manual... Ej: ahora mismo"></div>
+    <div class="input-box" style="margin-top:8px"><input id="tiempoManual" placeholder="Escribe tiempo manual..."></div>
   </div>
 
-  <!-- OTROS FORMS -->
-  <div id="formAliados" style="display:none"><p style="font-size:12px;color:#6b7280;padding:10px">Mismo que A recoger - usado para aliados general</p></div>
-  <div id="formNuevo" style="display:none">
-    <label class="label">Dirección de recogida</label><div class="input-box"><input id="pickup" placeholder="Recogida..."></div>
-    <label class="label">Dirección de entrega</label><div class="input-box"><input id="delivery" placeholder="Entrega..."></div>
-    <label class="label">Cliente</label><div class="input-box"><input id="cliente" placeholder="Nombre"></div>
-    <label class="label">Teléfono</label><div class="input-box"><input id="telefono" placeholder="Tel"></div>
-    <label class="label">Precio</label><div class="input-box"><input id="precioInput" type="number" placeholder="$0"></div>
+  <div id="formAliadosComprar" style="display:none">
+    <label class="label">Nombre de aliado</label><div class="input-box"><input id="aliadoNombreC" placeholder="Nombre del aliado..." oninput="buscarAliadoC()"><div class="sugList" id="sugAliadosC"></div></div>
+    <label class="label">Que comprar</label><div class="input-box"><input id="queComprarA" placeholder="Que se debe comprar"></div>
+    <label class="label">Dirección de entrega</label><div class="input-box"><input id="deliveryAliadoC" placeholder="Entrega..."></div>
+    <label class="label">Teléfono</label><div class="input-box"><input id="telAliadoC" placeholder="Tel"></div>
+    <label class="label">Precio</label><div class="input-box"><input id="precioAliadoC" type="number" placeholder="$0"></div>
   </div>
-  <div id="formComprar" style="display:none">
-    <label class="label">Que hay que comprar</label><div class="input-box"><input id="queComprar" placeholder="Ej: 2 cocas, pan..."></div>
-    <label class="label">Donde comprar</label><div class="input-box"><input id="dondeComprar" placeholder="Ej: Oxxo, Walmart..."></div>
-    <label class="label">Dirección de entrega</label><div class="input-box"><input id="deliveryComprar" placeholder="Entrega..."></div>
-    <label class="label">Precio</label><div class="input-box"><input id="precioComprar" type="number" placeholder="$0"></div>
-    <label class="label">Teléfono</label><div class="input-box"><input id="telComprar" placeholder="Tel"></div>
+
+  <div id="formNuevoRecoger" style="display:none">
+    <label class="label">Dirección de recogida</label><div class="input-box"><input id="pickupN" placeholder="Recogida..."></div>
+    <label class="label">Dirección de entrega</label><div class="input-box"><input id="deliveryN" placeholder="Entrega..."></div>
+    <label class="label">Nombre quien recibe</label><div class="input-box"><input id="nombreRecibeN" placeholder="Nombre recibe"></div>
+    <label class="label">Teléfono quien recibe</label><div class="input-box"><input id="telRecibeN" placeholder="Tel"></div>
+    <label class="label">Precio</label><div class="input-box"><input id="precioN" type="number" placeholder="$0"></div>
+  </div>
+
+  <div id="formNuevoComprar" style="display:none">
+    <label class="label">Que hay que comprar</label><div class="input-box"><input id="queComprarN" placeholder="Ej: mandado..."></div>
+    <label class="label">Donde comprar</label><div class="input-box"><input id="dondeComprarN" placeholder="Ej: Oxxo..."></div>
+    <label class="label">Dirección de entrega</label><div class="input-box"><input id="deliveryComprarN" placeholder="Entrega..."></div>
+    <label class="label">Nombre cliente</label><div class="input-box"><input id="clienteN" placeholder="Nombre"></div>
+    <label class="label">Teléfono</label><div class="input-box"><input id="telN" placeholder="Tel"></div>
+    <label class="label">Precio</label><div class="input-box"><input id="precioComprarN" type="number" placeholder="$0"></div>
   </div>
 
   <div class="botones">
@@ -128,39 +136,37 @@ body{background:#f8f9fb;zoom:0.9}
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
-let map, directionsService, directionsRenderer, clientesLista=[], distanciaKm=0, tiempoMin=0, precioCalc=0, modo='recoger';
-let markerPickup=null, markerDelivery=null;
-
+let map, directionsService, directionsRenderer, clientesLista=[], distanciaKm=0, tipo='aliados', servicio='recoger', markerPickup=null, markerDelivery=null;
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:true, polylineOptions:{ strokeColor:"#E10600", strokeWeight:5 } });
   cargarClientes();
-  const opt={ componentRestrictions:{country:"mx"} };
-  new google.maps.places.Autocomplete(document.getElementById("deliveryAliado"), opt).addListener("place_changed", calcularRutaAliado);
-  new google.maps.places.Autocomplete(document.getElementById("delivery"), opt);
-  new google.maps.places.Autocomplete(document.getElementById("deliveryComprar"), opt);
-  new google.maps.places.Autocomplete(document.getElementById("pickup"), opt);
 }
 function cargarClientes(){
   db.ref('ventas').once('value', snap=>{
     const v=snap.val()||{}; const mapC={};
-    Object.values(v).forEach(p=>{ const n=(p.cliente||'').trim(); if(!n) return; const k=n.toLowerCase(); if(!mapC[k]) mapC[k]={nombre:n, direccion:p.direccion||p.direccionRecogida||'', telefono:p.telefono||''}; });
+    Object.values(v).forEach(p=>{ const n=(p.cliente||'').trim(); if(!n) return; const k=n.toLowerCase(); if(!mapC[k]) mapC[k]={nombre:n, direccion:p.direccion||p.direccionRecogida||''}; });
     clientesLista=Object.values(mapC);
   });
 }
-function cambiarModo(m){
-  modo=m;
-  ['Aliados','Nuevo','Recoger','Comprar'].forEach(n=>{
-    const btn=document.getElementById('btn'+n);
-    if(btn) btn.classList.remove('active');
-  });
-  document.getElementById('btn'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
-  document.getElementById('formRecoger').style.display = m==='recoger' ? 'block' : 'none';
-  document.getElementById('formAliados').style.display = m==='aliados' ? 'block' : 'none';
-  document.getElementById('formNuevo').style.display = m==='nuevo' ? 'block' : 'none';
-  document.getElementById('formComprar').style.display = m==='comprar' ? 'block' : 'none';
-  if(m==='aliados'){ document.getElementById('formRecoger').style.display='block'; } // aliados usa mismo que recoger por ahora
+function setTipo(t){
+  tipo=t;
+  document.getElementById('btnAliados').classList.toggle('active', t==='aliados');
+  document.getElementById('btnNuevo').classList.toggle('active', t==='nuevo');
+  actualizarForm();
+}
+function setServicio(s){
+  servicio=s;
+  document.getElementById('btnRecoger').classList.toggle('active', s==='recoger');
+  document.getElementById('btnComprar').classList.toggle('active', s==='comprar');
+  actualizarForm();
+}
+function actualizarForm(){
+  document.getElementById('formAliadosRecoger').style.display = (tipo==='aliados' && servicio==='recoger')?'block':'none';
+  document.getElementById('formAliadosComprar').style.display = (tipo==='aliados' && servicio==='comprar')?'block':'none';
+  document.getElementById('formNuevoRecoger').style.display = (tipo==='nuevo' && servicio==='recoger')?'block':'none';
+  document.getElementById('formNuevoComprar').style.display = (tipo==='nuevo' && servicio==='comprar')?'block':'none';
 }
 function buscarAliado(){
   const q=document.getElementById('aliadoNombre').value.toLowerCase().trim();
@@ -175,58 +181,29 @@ function buscarAliado(){
     list.appendChild(d);
   }); list.style.display='block';
 }
-function limpiar(id, btn){ document.getElementById(id).value=''; document.getElementById(btn).classList.remove('show'); if(id==='aliadoNombre') document.getElementById('aliadoInfo').style.display='none'; }
-function setTiempo(min, el){
-  document.querySelectorAll('.tiempoBtn').forEach(b=>b.classList.remove('active')); el.classList.add('active');
-  document.getElementById('tiempoManual').value=min+' min';
-}
+function limpiar(id, btn){ document.getElementById(id).value=''; document.getElementById(btn).classList.remove('show'); }
+function setTiempo(min, el){ document.querySelectorAll('.tiempoBtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); document.getElementById('tiempoManual').value=min+' min'; }
 function calcularRutaAliado(){
   const origen=document.getElementById('aliadoDireccion').innerText;
   const destino=document.getElementById('deliveryAliado').value;
-  if(!origen || origen==='-' || !destino) return;
+  if(!origen || origen==='-' ||!destino) return;
   directionsService.route({ origin: origen, destination: destino, travelMode: google.maps.TravelMode.DRIVING }, (res, status)=>{
     if(status==='OK'){
       directionsRenderer.setDirections(res);
       const leg=res.routes[0].legs[0];
-      distanciaKm=leg.distance.value/1000; tiempoMin=Math.round(leg.duration.value/60); precioCalc=15+(distanciaKm*8);
+      distanciaKm=leg.distance.value/1000;
       document.getElementById('distancia').innerText=distanciaKm.toFixed(1)+' km';
-      document.getElementById('tiempo').innerText=tiempoMin+' min';
-      document.getElementById('precioLabel').innerText='$'+precioCalc.toFixed(0);
-      document.getElementById('precioAliado').value=precioCalc.toFixed(0);
-      if(markerPickup) markerPickup.setMap(null); if(markerDelivery) markerDelivery.setMap(null);
-      markerPickup=new google.maps.Marker({ position: leg.start_location, map: map, icon:{ path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#E10600", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 } });
-      markerDelivery=new google.maps.Marker({ position: leg.end_location, map: map, icon:{ path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#16a34a", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 } });
+      document.getElementById('tiempo').innerText=Math.round(leg.duration.value/60)+' min';
+      const precio=15+(distanciaKm*8);
+      document.getElementById('precioLabel').innerText='$'+precio.toFixed(0);
+      document.getElementById('precioAliado').value=precio.toFixed(0);
     }
   });
 }
-function enviarCotizacion(){
-  const data={ modo, fecha:new Date().toISOString().slice(0,10) };
-  if(modo==='recoger' || modo==='aliados'){
-    data.aliado=document.getElementById('aliadoNombre').value;
-    data.dirAliado=document.getElementById('aliadoDireccion').innerText;
-    data.entrega=document.getElementById('deliveryAliado').value;
-    data.nombreRecibe=document.getElementById('nombreRecibe').value;
-    data.telRecibe=document.getElementById('telRecibe').value;
-    data.precio=document.getElementById('precioAliado').value;
-    data.tiempo=document.getElementById('tiempoManual').value;
-    data.distancia=distanciaKm.toFixed(1);
-  }
-  db.ref('cotizaciones').push(data).then(()=>alert('Cotización enviada: $'+(data.precio||0)));
-}
+function enviarCotizacion(){ alert('Cotización '+tipo+' '+servicio+' $'+(document.getElementById('precioAliado')?.value||0)); }
 function enviarPedido(){
-  const data={ modo, fecha:new Date().toISOString().slice(0,10), estado:"pendiente" };
-  if(modo==='recoger' || modo==='aliados'){
-    data.cliente=document.getElementById('aliadoNombre').value;
-    data.direccionRecogida=document.getElementById('aliadoDireccion').innerText;
-    data.direccion=document.getElementById('deliveryAliado').value;
-    data.nombreRecibe=document.getElementById('nombreRecibe').value;
-    data.telefono=document.getElementById('telRecibe').value;
-    data.precio=document.getElementById('precioAliado').value;
-    data.tiempoRecoger=document.getElementById('tiempoManual').value;
-    data.distancia=distanciaKm.toFixed(1);
-  }
-  db.ref('ventas').push(data);
-  db.ref('pedidos_repartidor').push(data).then(()=>{ alert('Pedido a recoger enviado al repartidor'); location.href='admin.html'; });
+  const data={ tipo, servicio, fecha:new Date().toISOString().slice(0,10), estado:"pendiente", aliado:document.getElementById('aliadoNombre')?.value, entrega:document.getElementById('deliveryAliado')?.value, nombreRecibe:document.getElementById('nombreRecibe')?.value, telefono:document.getElementById('telRecibe')?.value, precio:document.getElementById('precioAliado')?.value };
+  db.ref('pedidos_repartidor').push(data).then(()=>{ alert('Pedido '+tipo+' '+servicio+' enviado'); location.href='admin.html'; });
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initMap" async defer></script>
