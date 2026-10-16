@@ -35,14 +35,17 @@ body{background:#f6f7f9}
     <img id="pAvatar" class="avatar" src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png">
     <div><b id="pNombre" style="font-size:18px">Cargando...</b><p style="font-size:11px;color:#6b7280" id="pMoto"></p><p style="font-size:11px;color:#6b7280" id="pUsuario"></p></div>
   </div>
-  <button onclick="logout()" style="height:38px;padding:0 14px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons">logout</span> Salir</button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <select id="filtroMes" onchange="renderStats()" style="height:38px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;font-weight:800;font-size:12px"><option value="todos">Todos los meses</option></select>
+    <button onclick="logout()" style="height:38px;padding:0 14px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons">logout</span> Salir</button>
+  </div>
 </div>
 
 <div class="cards">
   <div class="card" style="border-left:4px solid #f59e0b"><small>CUANTO DEBES</small><b id="debe" style="color:#d97706">$0</b><small id="debeDet">0 mandados / 0 transportes</small></div>
-  <div class="card" style="border-left:4px solid #16a34a"><small>YA PAGADO (EN CAJA)</small><b id="pagado" style="color:#16a34a">$0</b></div>
-  <div class="card"><small>SERVICIOS TOTALES</small><b id="totalServ">0</b></div>
-  <div class="card"><small>VALOR CLIENTES TOTAL</small><b id="valorCli">$0</b></div>
+  <div class="card" style="border-left:4px solid #16a34a"><small>VALOR PAGADO</small><b id="pagado" style="color:#16a34a">$0</b><small>Ya en caja Kigo</small></div>
+  <div class="card"><small>SERVICIOS TOTALES</small><b id="totalServ">0</b><small id="mesDet">0 en este mes</small></div>
+  <div class="card" style="border-left:4px solid #111"><small>INGRESOS TOTALES</small><b id="ingresosTotales" style="color:#111">$0</b><small>Cliente - Tarifa Kigo</small></div>
 </div>
 
 <div class="profile">
@@ -59,12 +62,13 @@ body{background:#f6f7f9}
     <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
       <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
       <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
+      <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pIngMes">Ingresos mes: $0</p>
     </div>
     <button onclick="pagarWA()" style="width:100%;height:42px;background:#25D366;border:none;border-radius:12px;color:#fff;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons">chat</span> Pagar deuda</button>
   </div>
   <div class="card">
     <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">list_alt</span> Mis servicios por fecha</h3>
-    <table class="table"><thead><tr><th>Fecha</th><th>Servicio</th><th>Cliente $</th><th>Tarifa Kigo</th><th>Estado</th></tr></thead><tbody id="tablaMis"></tbody></table>
+    <table class="table"><thead><tr><th>Fecha</th><th>Servicio</th><th>Cliente $</th><th>Tarifa Kigo</th><th>Ganancia</th><th>Estado</th></tr></thead><tbody id="tablaMis"></tbody></table>
   </div>
 </div>
 
@@ -78,10 +82,9 @@ let repartidorActual=null;
 let repartidorKey=localStorage.getItem('kigo_repa_key');
 let repartidorNombre=localStorage.getItem('kigo_repa_nombre');
 
-// Si no viene de login, lo regresamos
 if(!repartidorKey &&!repartidorNombre){
   alert('Debes iniciar sesión desde el login');
-  window.location.href='login.html'; // o index.html donde está tu login
+  window.location.href='login.html';
 }
 
 if(repartidorKey){
@@ -129,28 +132,52 @@ function cargarVentas(){
       let tarifa=esTrans?10:5;
       let estado=(v.estado||'').toLowerCase();
       let precioCliente=parseFloat(v.precio||v.total||v.valor||0)||0;
-      return {...v, _esTrans:esTrans, _tarifa:tarifa, _estado:estado, _precioCli:precioCliente, _fecha:(v.fecha||'').slice(0,10)};
+      let fechaStr=(v.fecha||'').slice(0,10);
+      let mes=fechaStr.slice(0,7);
+      let ganancia=precioCliente - tarifa;
+      return {...v, _esTrans:esTrans, _tarifa:tarifa, _estado:estado, _precioCli:precioCliente, _fecha:fechaStr, _mes:mes, _ganancia:ganancia};
     });
+    initFiltroMes();
     renderStats();
   });
 }
 
+function initFiltroMes(){
+  const meses=[...new Set(ventasAll.map(v=>v._mes))].filter(Boolean).sort().reverse();
+  const sel=document.getElementById('filtroMes');
+  const actual=sel.value;
+  sel.innerHTML='<option value="todos">Todos los meses</option>';
+  meses.forEach(m=>{
+    const op=document.createElement('option');
+    op.value=m; op.textContent=m;
+    sel.appendChild(op);
+  });
+  if(actual) sel.value=actual;
+}
+
 function renderStats(){
-  let debe=0, pagado=0, mandados=0, transportes=0, valorCli=0;
-  ventasAll.forEach(v=>{
-    valorCli+=v._precioCli;
+  const mesSel=document.getElementById('filtroMes').value;
+  let lista=ventasAll;
+  if(mesSel!=='todos') lista=ventasAll.filter(v=>v._mes===mesSel);
+
+  let debe=0, pagado=0, mandados=0, transportes=0, ingresos=0;
+  lista.forEach(v=>{
+    ingresos+=v._ganancia;
     if(v._estado==='debe'){ debe+=v._tarifa; if(v._esTrans) transportes++; else mandados++; }
     else if(v._estado==='pagado'){ pagado+=v._tarifa; }
   });
+
   document.getElementById('debe').innerText='$'+debe;
   document.getElementById('debeDet').innerText=mandados+' mandados x $5 / '+transportes+' transportes x $10';
   document.getElementById('pagado').innerText='$'+pagado;
-  document.getElementById('totalServ').innerText=ventasAll.length;
-  document.getElementById('valorCli').innerText='$'+valorCli;
+  document.getElementById('totalServ').innerText=lista.length;
+  document.getElementById('mesDet').innerText= mesSel==='todos'? lista.length+' total' : lista.length+' en '+mesSel;
+  document.getElementById('ingresosTotales').innerText='$'+ingresos;
+  document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): $'+ingresos;
 
   const tbody=document.getElementById('tablaMis'); tbody.innerHTML='';
-  ventasAll.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'')).forEach(v=>{
-    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>$${v._precioCli}</td><td>$${v._tarifa}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
+  lista.sort((a,b)=> (b._fecha||'').localeCompare(a._fecha||'')).forEach(v=>{
+    tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>$${v._precioCli}</td><td>$${v._tarifa}</td><td style="color:#111">$${v._ganancia}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
   });
 }
 
@@ -167,7 +194,9 @@ function subirFoto(campo){
 function pagarWA(){
   const debe=document.getElementById('debe').innerText;
   const det=document.getElementById('debeDet').innerText;
-  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mi deuda es ${debe} - ${det}.`;
+  const ing=document.getElementById('ingresosTotales').innerText;
+  const mes=document.getElementById('filtroMes').value;
+  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mes: ${mes}. Mi deuda es ${debe} - ${det}. Mis ingresos: ${ing}.`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
