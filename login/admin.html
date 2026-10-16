@@ -130,8 +130,8 @@
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-(function(){ if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='login/'; } })();
-function cerrarSesion(){ localStorage.clear(); location.href='login/'; }
+(function(){ if(localStorage.getItem('kigo_rol')!=='admin'){ location.href='index.html'; } })();
+function cerrarSesion(){ localStorage.clear(); location.href='index.html'; }
 function openM(){ document.getElementById('menu').classList.add('open'); document.getElementById('menuBg').classList.add('open'); }
 function closeM(){ document.getElementById('menu').classList.remove('open'); document.getElementById('menuBg').classList.remove('open'); }
 let tipoActual='moto';
