@@ -110,8 +110,6 @@ function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:true, polylineOptions:{ strokeColor:"#E10600", strokeWeight:5 } });
-
-  // ESTE ES EL FIX - Autocomplete bien vinculado
   autoDeliveryAliado = new google.maps.places.Autocomplete(document.getElementById("deliveryAliado"), { componentRestrictions: { country: "mx" }, fields: ["formatted_address","geometry"] });
   autoDeliveryAliado.addListener("place_changed", ()=>{
     const place = autoDeliveryAliado.getPlace();
@@ -121,7 +119,6 @@ function initMap(){
     toggleClear('deliveryAliado','clearDelA');
     calcularRutaAliado();
   });
-
   cargarClientes();
 }
 function cargarClientes(){
@@ -174,17 +171,31 @@ function enviarCotizacion(){
   const aliado=document.getElementById('aliadoNombre').value.trim();
   const dirAliado=document.getElementById('aliadoDireccion').innerText;
   const entrega=document.getElementById('deliveryAliado').value.trim();
-  const nombreR=document.getElementById('nombreRecibe').value.trim();
-  const telR=document.getElementById('telRecibe').value.trim();
   const precio=document.getElementById('precioAliado').value;
-  const tRec=document.getElementById('tiempoManual').value;
-  if(!aliado||!entrega||!nombreR||!telR){ alert('Completa aliado, entrega, nombre y teléfono'); return; }
+  if(!aliado||!entrega){ alert('Completa aliado y entrega'); return; }
 
-  const datos={ tipo, servicio, aliado, dirAliado, entrega, nombreRecibe:nombreR, telefono:telR, precio, tiempoRecoger:tRec, distancia:distanciaKm.toFixed(1), tiempo:tiempoMin, fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  const datos={ tipo, servicio, aliado, dirAliado, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
   db.ref('cotizaciones').push(datos);
 
-  const msg = `Hola ${nombreR} 👋 Kigo Xpress\n\n*Aliado:* ${aliado}\n*Recoger en:* ${dirAliado}\n*Entrega en:* ${entrega}\n*Distancia:* ${distanciaKm.toFixed(1)} km - ${tiempoMin} min\n*Tiempo para recoger:* ${tRec}\n*Precio:* $${precio}\n\n¿Confirmamos?`;
-  window.open(`https://wa.me/52${telR.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+  const msg = 
+`🏍️ *KIGO XPRESS* 🏍️
+━━━━━━━━━━━━━━━
+📦 *COTIZACIÓN DE ENVÍO*
+
+📍 *Dirección de recogida:*
+${dirAliado}
+
+🏠 *Dirección de entrega:*
+${entrega}
+
+💰 *Valor del servicio:* $${precio}
+
+🛣️ *Kilómetros recorridos:* ${distanciaKm.toFixed(1)} km
+
+━━━━━━━━━━━━━━━
+¿Confirmamos el servicio? ✅`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function enviarPedido(){
@@ -195,20 +206,26 @@ function enviarPedido(){
   const telR=document.getElementById('telRecibe').value.trim();
   const precio=document.getElementById('precioAliado').value;
   const tRec=document.getElementById('tiempoManual').value;
-  if(!aliado||!entrega||!nombreR){ alert('Completa datos'); return; }
+  if(!aliado||!entrega){ alert('Completa datos'); return; }
 
-  const datos={ tipo, servicio, cliente:aliado, direccionRecogida:dirAliado, direccion:entrega, nombreRecibe:nombreR, telefono:telR, precio, tiempoRecoger:tRec, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'pendiente', origen:'cotizaciones_aliados_recoger' };
+  const datos={ tipo, servicio, cliente:aliado, direccionRecogida:dirAliado, direccion:entrega, nombreRecibe:nombreR, telefono:telR, precio, tiempoRecoger:tRec, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'pendiente' };
   db.ref('ventas').push(datos);
-  db.ref('pedidos_repartidor').push(datos).then(()=>{
-    // Mensaje para repartidor - aquí pon tu número de repartidor o grupo
-    const msgRep = `🚀 *NUEVO PEDIDO KIGO*\n\n*Servicio:* ${tipo} - ${servicio}\n*Aliado:* ${aliado}\n*Recoger:* ${dirAliado}\n*Entregar a:* ${nombreR} - ${telR}\n*Dirección entrega:* ${entrega}\n*Distancia:* ${distanciaKm.toFixed(1)} km\n*Precio:* $${precio}\n*Tiempo recoger:* ${tRec}\n\nMapa: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
-    
-    // Cambia este número por el del repartidor
-    const numeroRepartidor = prompt('Número del repartidor para enviar pedido (10 dígitos):', '4181234567');
-    if(numeroRepartidor){
-      window.open(`https://wa.me/52${numeroRepartidor.replace(/\D/g,'')}?text=${encodeURIComponent(msgRep)}`, '_blank');
-    }
-  });
+  db.ref('pedidos_repartidor').push(datos);
+
+  const msgRep = 
+`🚀 *NUEVO PEDIDO - KIGO XPRESS*
+
+👤 *Aliado:* ${aliado}
+📦 *Recoger en:* ${dirAliado}
+🏠 *Entregar a:* ${nombreR} - ${telR}
+📍 *Dirección entrega:* ${entrega}
+⏱️ *Tiempo recoger:* ${tRec}
+🛣️ *Distancia:* ${distanciaKm.toFixed(1)} km
+💰 *Precio:* $${precio}
+
+🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`, '_blank');
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initMap" async defer></script>
