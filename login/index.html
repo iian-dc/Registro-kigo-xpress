@@ -35,32 +35,65 @@
 const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", authDomain: "registro-ventas-kigo.firebaseapp.com", databaseURL: "https://registro-ventas-kigo-default-rtdb.firebaseio.com", projectId: "registro-ventas-kigo", storageBucket: "registro-ventas-kigo.firebasestorage.app", messagingSenderId: "494693818399", appId: "1:494693818399:web:34312307ec5cd52190752a" };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
+
+// SOLO CREAMOS ADMIN, NO REPARTIDOR
 db.ref('usuarios').once('value').then(s=>{
  if(!s.exists()){
   db.ref('usuarios').set({
-   admin:{usuario:'admin',password:'1234',rol:'admin',nombre:'Administrador'},
-   repartidor:{usuario:'repartidor',password:'1234',rol:'repartidor',nombre:'Repartidor Demo'}
+   admin:{usuario:'admin',password:'1234',rol:'admin',nombre:'Administrador'}
   });
  }
 });
+
 function showMsg(t){document.getElementById('msg').innerText=t;document.getElementById('msg').style.display='block';}
+
 function ingresar(){
  var u=document.getElementById('usuario').value.trim();
  var p=document.getElementById('password').value.trim();
  if(!u||!p){showMsg('Ingresa usuario y contraseña');return;}
- if(u.toLowerCase()=='admin' && p=='1234'){
-  localStorage.setItem('kigo_rol','admin');localStorage.setItem('kigo_user','admin');location.href='admin.html';return;
- }
+
+ // 1. ADMIN - SOLO USUARIOS
  db.ref('usuarios').once('value').then(s=>{
   var users=s.val()||{};
-  var found=Object.values(users).find(x=>x.usuario.toLowerCase()==u.toLowerCase() && x.password==p);
-  if(found){
-   localStorage.setItem('kigo_rol',found.rol);localStorage.setItem('kigo_user',found.usuario);localStorage.setItem('kigo_nombre',found.nombre);
-   if(found.rol=='admin') location.href='admin.html'; else location.href='repartidor.html?user='+encodeURIComponent(found.usuario);return;
+  var adminFound=Object.values(users).find(x=>x.rol==='admin' && x.usuario.toLowerCase()===u.toLowerCase() && x.password===p);
+  if(adminFound){
+   localStorage.setItem('kigo_rol','admin');
+   localStorage.setItem('kigo_user',adminFound.usuario);
+   localStorage.setItem('kigo_nombre',adminFound.nombre);
+   location.href='admin.html';
+   return;
   }
+  // Si puso admin 1234 manual también entra
+  if(u.toLowerCase()==='admin' && p==='1234'){
+   localStorage.setItem('kigo_rol','admin');localStorage.setItem('kigo_user','admin');location.href='admin.html';return;
+  }
+
+  // 2. REPARTIDORES - BUSCA POR USUARIO Y CONTRASEÑA DENTRO DE /repartidores
   db.ref('repartidores').once('value').then(s2=>{
-   var reps=s2.val()||{};var rf=Object.values(reps).find(r=>r.nombre.toLowerCase()==u.toLowerCase());
-   if(rf && p=='1234'){localStorage.setItem('kigo_rol','repartidor');localStorage.setItem('kigo_user',rf.nombre);localStorage.setItem('kigo_nombre',rf.nombre);location.href='repartidor.html?user='+encodeURIComponent(rf.nombre);return;}
+   var reps=s2.val()||{};
+   var foundKey=null;
+   var foundRep=null;
+   Object.keys(reps).forEach(key=>{
+     var r=reps[key];
+     var usuarioRep=(r.usuario||r.user||'').toString().toLowerCase();
+     var passRep=(r.contraseña||r.password||r.pass||'').toString();
+     if(usuarioRep===u.toLowerCase() && passRep===p){
+       foundKey=key;
+       foundRep=r;
+     }
+   });
+
+   if(foundRep){
+     localStorage.setItem('kigo_rol','repartidor');
+     localStorage.setItem('kigo_repa_key',foundKey);
+     localStorage.setItem('kigo_repa_nombre',foundRep.nombre);
+     localStorage.setItem('kigo_repa_usuario',foundRep.usuario);
+     localStorage.setItem('kigo_user',foundRep.usuario);
+     localStorage.setItem('kigo_nombre',foundRep.nombre);
+     location.href='panelrepa.html';
+     return;
+   }
+
    showMsg('Usuario o contraseña incorrectos');
   });
  });
