@@ -96,6 +96,25 @@ const firebaseConfig = { apiKey: "AIzaSyAsRa2QW9-l3vuh_mWa0ZhJh6ZSPNRRIkM", auth
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 let map, directionsService, directionsRenderer, clientesLista=[], distanciaKm=0, tiempoMin=0, precioCalc=0, tipo='aliados', servicio='recoger', markerPickup=null, markerDelivery=null, autoDeliveryAliado;
+
+// === PRECIO POR DISTANCIA EN TIEMPO REAL DESDE CONFIGURACION ===
+let precioBase = 15;
+let precioPorKm = 8;
+db.ref('configuracion/precios').on('value', snap=>{
+  const p = snap.val()||{base:15, km:8};
+  precioBase = parseFloat(p.base)||15;
+  precioPorKm = parseFloat(p.km)||8;
+  if(distanciaKm>0) recalcularPrecio();
+});
+
+function recalcularPrecio(){
+  precioCalc = precioBase + (distanciaKm * precioPorKm);
+  document.getElementById('distancia').innerText=distanciaKm.toFixed(1)+' km';
+  document.getElementById('tiempo').innerText=tiempoMin+' min';
+  document.getElementById('precioLabel').innerText='$'+precioCalc.toFixed(0);
+  document.getElementById('precioAliado').value=precioCalc.toFixed(0);
+}
+
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
@@ -141,11 +160,8 @@ function calcularRutaAliado(){
     if(status==='OK'){
       directionsRenderer.setDirections(res);
       const leg=res.routes[0].legs[0];
-      distanciaKm=leg.distance.value/1000; tiempoMin=Math.round(leg.duration.value/60); precioCalc=15+(distanciaKm*8);
-      document.getElementById('distancia').innerText=distanciaKm.toFixed(1)+' km';
-      document.getElementById('tiempo').innerText=tiempoMin+' min';
-      document.getElementById('precioLabel').innerText='$'+precioCalc.toFixed(0);
-      document.getElementById('precioAliado').value=precioCalc.toFixed(0);
+      distanciaKm=leg.distance.value/1000; tiempoMin=Math.round(leg.duration.value/60);
+      recalcularPrecio();
       if(markerPickup) markerPickup.setMap(null); if(markerDelivery) markerDelivery.setMap(null);
       markerPickup=new google.maps.Marker({ position: leg.start_location, map: map, icon:{ path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#E10600", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 } });
       markerDelivery=new google.maps.Marker({ position: leg.end_location, map: map, icon:{ path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#16a34a", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 } });
@@ -171,8 +187,6 @@ function enviarPedido(){
   const precio=document.getElementById('precioAliado').value;
   const tRec=document.getElementById('tiempoManual').value || 'por confirmar';
   if(!aliado||!entrega){ alert('Completa datos'); return; }
-
-  // YA NO GUARDA EN HISTORIAL - SOLO WHATSAPP
   const numeroPedido = Math.floor(1000 + Math.random() * 9000);
   const msgRep = `🚨 #${numeroPedido}\n📍 Recoger\n👤 ${aliado}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección del aliado:\n${dirAliado}\n\n🏠 Dirección de entrega:\n${entrega}\n\n👤 Nombre del cliente:\n${nombreR}\n\n📞 Número de teléfono:\n${telR}\n\n💰 Valor del servicio:\n$${precio}\n\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`, '_blank');
