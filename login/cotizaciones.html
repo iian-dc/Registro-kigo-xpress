@@ -17,13 +17,15 @@ body{background:#f8f9fb;zoom:0.9}
 #map{width:100%;height:360px;background:#e5e7eb;border-bottom:1px solid #eef0f3}
 .container{padding:14px;max-width:800px;margin:0 auto}
 .card{background:#fff;border:1px solid #eef0f3;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.04);padding:18px;margin-bottom:14px}
+.info-row{display:flex;gap:10px;margin-bottom:14px}
+.info{flex:1;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;font-size:11px;font-weight:600;text-align:center}
+.info b{font-size:14px;display:block;color:#111;margin-top:2px}
 .label{font-size:11px;font-weight:700;color:#6b7280;margin:10px 4px 4px;display:block}
-.input-box{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;height:46px}
-.input-box input{border:none;outline:none;width:100%;font-size:13px;background:transparent}
+.input-box{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;height:46px;position:relative}
+.input-box input{border:none;outline:none;width:100%;font-size:13px;background:transparent;padding-right:30px}
 .icon{width:16px;height:16px;color:#6b7280;flex-shrink:0}
-.info-row{display:flex;gap:10px;margin-top:12px}
-.info{flex:1;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;font-size:11px;font-weight:600}
-.info b{font-size:13px;display:block;color:#111}
+.btn-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:rgba(0,0,0,0.08);color:#111;font-size:12px;font-weight:800;cursor:pointer;display:none;align-items:center;justify-content:center}
+.btn-clear.show{display:flex}
 .botones{display:flex;gap:12px;margin-top:16px}
 .btn{flex:1;height:48px;border-radius:12px;border:none;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-cotiza{background:#fff;border:1px solid #111;color:#111}
@@ -34,32 +36,38 @@ body{background:#f8f9fb;zoom:0.9}
 <body>
 <div class="topbar">
   <button class="btn-x" onclick="location.href='admin.html'">✕</button>
-  <div class="title">
-    <h1>Cotizaciones</h1>
-    <p>Mapa vinculado a Google Maps - Kigo Xpress</p>
-  </div>
+  <div class="title"><h1>Cotizaciones</h1><p>Mapa vinculado a Google Maps - Kigo Xpress</p></div>
 </div>
 
 <div id="map"></div>
 
 <div class="container">
   <div class="card">
+    <!-- PRIMERO DEBAJO DEL MAPA -->
+    <div class="info-row">
+      <div class="info"><span>Distancia</span><b id="distancia">-- km</b></div>
+      <div class="info"><span>Tiempo estimado</span><b id="tiempo">-- min</b></div>
+      <div class="info"><span>Precio sugerido</span><b id="precioLabel">$0</b></div>
+    </div>
+
     <label class="label">Dirección de recogida</label>
     <div class="input-box">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>
-      <input id="pickup" placeholder="Escribe dirección de recogida... Ej: Calle 123, Dolores Hidalgo">
+      <input id="pickup" placeholder="Escribe dirección de recogida..." oninput="toggleClear('pickup','clearPickup')">
+      <button class="btn-clear" id="clearPickup" onclick="limpiar('pickup','clearPickup')">✕</button>
     </div>
 
     <label class="label">Dirección de entrega</label>
     <div class="input-box">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>
-      <input id="delivery" placeholder="Escribe dirección de entrega...">
+      <input id="delivery" placeholder="Escribe dirección de entrega..." oninput="toggleClear('delivery','clearDelivery')">
+      <button class="btn-clear" id="clearDelivery" onclick="limpiar('delivery','clearDelivery')">✕</button>
     </div>
 
-    <div class="info-row">
-      <div class="info"><span>Distancia</span><b id="distancia">-- km</b></div>
-      <div class="info"><span>Tiempo estimado</span><b id="tiempo">-- min</b></div>
-      <div class="info"><span>Precio sugerido</span><b id="precio">$0</b></div>
+    <label class="label">Precio sugerido (editable)</label>
+    <div class="input-box">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h6a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <input id="precioInput" type="number" placeholder="$0" oninput="syncPrecio()">
     </div>
 
     <label class="label">Cliente</label>
@@ -69,14 +77,8 @@ body{background:#f8f9fb;zoom:0.9}
     <div class="input-box"><input id="telefono" placeholder="418 123 4567"></div>
 
     <div class="botones">
-      <button class="btn btn-cotiza" onclick="enviarCotizacion()">
-        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7l1 5a2 2 0 0 1-.6 1.8l-1.4 1.4a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 1.8-.6l5 1A2 2 0 0 1 22 16.9z"/></svg>
-        Enviar cotización al cliente
-      </button>
-      <button class="btn btn-pedido" onclick="enviarPedido()">
-        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 6v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Enviar pedido al repartidor
-      </button>
+      <button class="btn btn-cotiza" onclick="enviarCotizacion()">Enviar cotización al cliente</button>
+      <button class="btn btn-pedido" onclick="enviarPedido()">Enviar pedido al repartidor</button>
     </div>
   </div>
 </div>
@@ -88,21 +90,41 @@ const db=firebase.database();
 
 let map, directionsService, directionsRenderer, autocompletePickup, autocompleteDelivery;
 let distanciaKm=0, tiempoMin=0, precioCalc=0;
+let markerPickup=null, markerDelivery=null;
 
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: 21.1576, lng: -100.9339 }, // Dolores Hidalgo
-    zoom: 13,
-    styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }]
+    center: { lat: 21.1576, lng: -100.9339 },
+    zoom: 13
   });
   directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:false });
+  directionsRenderer = new google.maps.DirectionsRenderer({ 
+    map: map, 
+    suppressMarkers:true,
+    polylineOptions:{ strokeColor:"#E10600", strokeWeight:5 }
+  });
 
   autocompletePickup = new google.maps.places.Autocomplete(document.getElementById("pickup"), { componentRestrictions: { country: "mx" } });
   autocompleteDelivery = new google.maps.places.Autocomplete(document.getElementById("delivery"), { componentRestrictions: { country: "mx" } });
 
-  autocompletePickup.addListener("place_changed", calcularRuta);
-  autocompleteDelivery.addListener("place_changed", calcularRuta);
+  autocompletePickup.addListener("place_changed", ()=>{ toggleClear('pickup','clearPickup'); calcularRuta(); });
+  autocompleteDelivery.addListener("place_changed", ()=>{ toggleClear('delivery','clearDelivery'); calcularRuta(); });
+}
+
+function toggleClear(inputId, btnId){
+  const val=document.getElementById(inputId).value;
+  const btn=document.getElementById(btnId);
+  if(val.length>0) btn.classList.add('show'); else btn.classList.remove('show');
+}
+function limpiar(inputId, btnId){
+  document.getElementById(inputId).value='';
+  document.getElementById(btnId).classList.remove('show');
+  directionsRenderer.setDirections({routes:[]});
+  if(markerPickup) markerPickup.setMap(null);
+  if(markerDelivery) markerDelivery.setMap(null);
+  document.getElementById("distancia").innerText="-- km";
+  document.getElementById("tiempo").innerText="-- min";
+  document.getElementById("precioLabel").innerText="$0";
 }
 
 function calcularRuta(){
@@ -120,14 +142,39 @@ function calcularRuta(){
       const leg = response.routes[0].legs[0];
       distanciaKm = leg.distance.value / 1000;
       tiempoMin = Math.round(leg.duration.value / 60);
-      // Precio ejemplo: $15 base + $8 por km
       precioCalc = 15 + (distanciaKm * 8);
       
       document.getElementById("distancia").innerText = distanciaKm.toFixed(2) + " km";
       document.getElementById("tiempo").innerText = tiempoMin + " min";
-      document.getElementById("precio").innerText = "$" + precioCalc.toFixed(0);
+      document.getElementById("precioLabel").innerText = "$" + precioCalc.toFixed(0);
+      document.getElementById("precioInput").value = precioCalc.toFixed(0);
+
+      // Marcadores rojo y verde
+      if(markerPickup) markerPickup.setMap(null);
+      if(markerDelivery) markerDelivery.setMap(null);
+      
+      markerPickup = new google.maps.Marker({
+        position: leg.start_location,
+        map: map,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#E10600", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 },
+        label: { text:"A", color:"#fff", fontWeight:"800" }
+      });
+      markerDelivery = new google.maps.Marker({
+        position: leg.end_location,
+        map: map,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:"#16a34a", fillOpacity:1, strokeColor:"#fff", strokeWeight:2 },
+        label: { text:"B", color:"#fff", fontWeight:"800" }
+      });
     }
   });
+}
+
+function syncPrecio(){
+  const val = document.getElementById("precioInput").value;
+  if(val){ 
+    precioCalc = parseFloat(val);
+    document.getElementById("precioLabel").innerText = "$" + val;
+  }
 }
 
 function enviarCotizacion(){
@@ -135,17 +182,13 @@ function enviarCotizacion(){
   const delivery = document.getElementById("delivery").value.trim();
   const cliente = document.getElementById("cliente").value.trim();
   const telefono = document.getElementById("telefono").value.trim();
+  const precioFinal = document.getElementById("precioInput").value || precioCalc;
   if(!pickup || !delivery || !cliente){ alert("Completa recogida, entrega y cliente"); return; }
-
-  const data = { cliente, telefono, pickup, delivery, distancia: distanciaKm.toFixed(2), tiempo: tiempoMin, precio: precioCalc.toFixed(0), fecha: new Date().toISOString().slice(0,10), estado: "cotizado" };
-  
+  const data = { cliente, telefono, pickup, delivery, distancia: distanciaKm.toFixed(2), tiempo: tiempoMin, precio: precioFinal, fecha: new Date().toISOString().slice(0,10), estado: "cotizado" };
   db.ref('cotizaciones').push(data).then(()=>{
-    const msg = `Hola ${cliente}, Kigo Xpress:%0A*Recogida:* ${pickup}%0A*Entrega:* ${delivery}%0A*Distancia:* ${distanciaKm.toFixed(2)} km%0A*Tiempo:* ${tiempoMin} min%0A*Precio:* $${precioCalc.toFixed(0)}`;
-    if(telefono){
-      window.open(`https://wa.me/52${telefono.replace(/\D/g,'')}?text=${msg}`, '_blank');
-    }else{
-      alert("Cotización guardada: $" + precioCalc.toFixed(0));
-    }
+    const msg = `Hola ${cliente}, Kigo Xpress:%0A*Recogida:* ${pickup}%0A*Entrega:* ${delivery}%0A*Distancia:* ${distanciaKm.toFixed(2)} km%0A*Precio:* $${precioFinal}`;
+    if(telefono){ window.open(`https://wa.me/52${telefono.replace(/\D/g,'')}?text=${msg}`, '_blank'); }
+    else{ alert("Cotización guardada: $" + precioFinal); }
   });
 }
 
@@ -154,21 +197,14 @@ function enviarPedido(){
   const delivery = document.getElementById("delivery").value.trim();
   const cliente = document.getElementById("cliente").value.trim();
   const telefono = document.getElementById("telefono").value.trim();
+  const precioFinal = document.getElementById("precioInput").value || precioCalc;
   if(!pickup || !delivery || !cliente){ alert("Completa recogida, entrega y cliente"); return; }
-
-  const data = { cliente, telefono, clienteNombre: cliente, direccion: delivery, direccionRecogida: pickup, precio: precioCalc.toFixed(0), distancia: distanciaKm.toFixed(2), fecha: new Date().toISOString().slice(0,10), estado: "pendiente", origen: "cotizaciones" };
-
-  // Lo guarda en ventas para que aparezca en clientes
-  db.ref('ventas').push({ cliente: cliente, telefono: telefono, direccion: delivery, direccionRecogida: pickup, precio: precioCalc.toFixed(0), fecha: new Date().toISOString().slice(0,10), tipo: "pedido_repartidor" });
-  db.ref('pedidos_repartidor').push(data).then(()=>{
-    alert("Pedido enviado al repartidor");
-    location.href='admin.html';
-  });
+  const data = { cliente, telefono, clienteNombre: cliente, direccion: delivery, direccionRecogida: pickup, precio: precioFinal, distancia: distanciaKm.toFixed(2), fecha: new Date().toISOString().slice(0,10), estado: "pendiente", origen: "cotizaciones" };
+  db.ref('ventas').push({ cliente: cliente, telefono: telefono, direccion: delivery, direccionRecogida: pickup, precio: precioFinal, fecha: new Date().toISOString().slice(0,10), tipo: "pedido_repartidor" });
+  db.ref('pedidos_repartidor').push(data).then(()=>{ alert("Pedido enviado al repartidor"); location.href='admin.html'; });
 }
 </script>
 
-<!-- PON AQUÍ TU API KEY DE GOOGLE -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initMap" async defer></script>
-
 </body>
 </html>
