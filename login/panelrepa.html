@@ -27,6 +27,11 @@ body{background:#f6f7f9}
 .badge.pendiente{background:#fef3c7;color:#92400e}
 .badge.pagado{background:#dcfce7;color:#166534}
 .inp{width:100%;height:40px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;margin-top:8px;font-size:12px;font-weight:600;outline:none}
+.btn{width:100%;height:42px;border:none;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:99}
+.modal-bg.open{display:block}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);width:92%;max-width:380px;background:#fff;border-radius:18px;padding:18px;z-index:100;display:none;max-height:85vh;overflow:auto}
+.modal.open{display:block;transform:translate(-50%,-50%) scale(1)}
 </style>
 </head>
 <body>
@@ -38,6 +43,7 @@ body{background:#f6f7f9}
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <select id="filtroMes" onchange="renderStats()" style="height:38px;border:1px solid #e5e7eb;border-radius:10px;padding:0 12px;font-weight:800;font-size:12px"><option value="todos">Todos los meses</option></select>
+    <button onclick="openConfig()" style="height:38px;padding:0 14px;border:1px solid #111;background:#111;color:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:18px">settings</span> Configuración</button>
     <button onclick="logout()" style="height:38px;padding:0 14px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons">logout</span> Salir</button>
   </div>
 </div>
@@ -47,38 +53,60 @@ body{background:#f6f7f9}
   <div class="card" style="border-left:4px solid #16a34a"><small>VALOR PAGADO</small><b id="pagado" style="color:#16a34a">$0</b><small>Ya en caja Kigo</small></div>
   <div class="card"><small>SERVICIOS TOTALES</small><b id="totalServ">0</b><small id="mesDet">0 en este mes</small></div>
   <div class="card" style="border-left:4px solid #111"><small>INGRESOS TOTALES</small><b id="ingresosTotales" style="color:#111">$0</b><small>Cliente - Tarifa Kigo</small></div>
+  <div class="card" style="border-left:4px solid #ef4444"><small>GASTOS</small><b id="gastosTotales" style="color:#ef4444">$0</b><small id="gastosDet">0 gastos en filtro</small></div>
+  <div class="card" style="border-left:4px solid #2563eb"><small>TOTAL (INGRESOS - GASTOS)</small><b id="totalFinal" style="color:#2563eb">$0</b><small>Lo que te queda</small></div>
 </div>
 
 <div class="profile">
   <div class="card">
-    <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">person</span> Mi perfil</h3>
-    <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de perfil</label>
-    <input type="file" id="filePerfil" accept="image/*" style="font-size:11px;margin-top:6px">
-    <button style="width:100%;height:38px;background:#E10600;border:none;color:#fff;border-radius:10px;font-weight:800;margin-top:8px;cursor:pointer" onclick="subirFoto('foto')">Subir foto</button>
-
-    <label style="font-size:11px;font-weight:800;margin-top:14px;display:block">Foto de moto</label>
-    <input type="file" id="fileMoto" accept="image/*" style="font-size:11px;margin-top:6px">
-    <button style="width:100%;height:38px;background:#111;border:none;color:#fff;border-radius:10px;font-weight:800;margin-top:8px;cursor:pointer" onclick="subirFoto('fotoMoto')">Subir moto</button>
-
-    <div style="margin-top:16px;border-top:1px solid #eef0f3;padding-top:14px">
-      <h3 style="font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">lock</span> Cambiar usuario y contraseña</h3>
-      <p style="font-size:10px;color:#6b7280;margin-top:4px">Se actualiza en tiempo real en Firebase</p>
-      <input id="cambiarUsuario" class="inp" placeholder="Nuevo usuario">
-      <input id="cambiarPass" class="inp" type="password" placeholder="Nueva contraseña">
-      <button onclick="actualizarCredenciales()" style="width:100%;height:40px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:800;margin-top:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons" style="font-size:16px">save</span> Actualizar credenciales</button>
-      <p id="msgCred" style="font-size:11px;color:#16a34a;margin-top:8px;display:none"></p>
-    </div>
-
+    <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">receipt_long</span> Ingresar Gasto</h3>
+    <p style="font-size:10px;color:#6b7280;margin-top:4px">Registra gasolina, refacciones, comida, etc. Se descuenta de tus ingresos.</p>
+    <input id="gastoDesc" class="inp" placeholder="Ej: Gasolina, llanta, comida">
+    <input id="gastoMonto" type="number" class="inp" placeholder="$ 0.00">
+    <button onclick="guardarGasto()" class="btn" style="background:#111;color:#fff;margin-top:10px"><span class="material-icons" style="font-size:16px">save</span> Guardar Gasto</button>
+    <p id="msgGasto" style="font-size:11px;color:#16a34a;margin-top:8px;display:none"></p>
     <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
-      <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
+      <p style="font-size:11px;font-weight:800" id="pIngMes">Ingresos mes: $0</p>
       <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pEstado">Estado: Activo</p>
-      <p style="font-size:11px;color:#6b7280;margin-top:4px" id="pIngMes">Ingresos mes: $0</p>
     </div>
     <button onclick="pagarWA()" style="width:100%;height:42px;background:#25D366;border:none;border-radius:12px;color:#fff;font-weight:800;margin-top:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-icons">chat</span> Pagar deuda</button>
   </div>
   <div class="card">
     <h3 style="font-size:13px;display:flex;align-items:center;gap:6px"><span class="material-icons">list_alt</span> Mis servicios por fecha</h3>
     <table class="table"><thead><tr><th>Fecha</th><th>Servicio</th><th>Cliente $</th><th>Tarifa Kigo</th><th>Ganancia</th><th>Estado</th></tr></thead><tbody id="tablaMis"></tbody></table>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURACION -->
+<div class="modal-bg" id="modalBg" onclick="closeConfig()"></div>
+<div class="modal" id="modalConfig">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons">settings</span> Configuración</h3>
+    <button onclick="closeConfig()" style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:#fff;cursor:pointer">✕</button>
+  </div>
+
+  <div style="padding:10px 0;border-bottom:1px solid #f3f4f6">
+    <h4 style="font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">person</span> Mi perfil - Fotos</h4>
+    <label style="font-size:11px;font-weight:800;margin-top:10px;display:block">Foto de perfil</label>
+    <input type="file" id="filePerfil" accept="image/*" style="font-size:11px;margin-top:6px">
+    <button class="btn" style="background:#E10600;color:#fff;height:38px;margin-top:8px" onclick="subirFoto('foto')">Subir foto</button>
+
+    <label style="font-size:11px;font-weight:800;margin-top:12px;display:block">Foto de moto</label>
+    <input type="file" id="fileMoto" accept="image/*" style="font-size:11px;margin-top:6px">
+    <button class="btn" style="background:#111;color:#fff;height:38px;margin-top:8px" onclick="subirFoto('fotoMoto')">Subir moto</button>
+  </div>
+
+  <div style="margin-top:14px">
+    <h4 style="font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">lock</span> Cambiar usuario y contraseña</h4>
+    <p style="font-size:10px;color:#6b7280;margin-top:4px">Se actualiza en tiempo real en Firebase /usuarios y /repartidores</p>
+    <input id="cambiarUsuario" class="inp" placeholder="Nuevo usuario">
+    <input id="cambiarPass" class="inp" type="password" placeholder="Nueva contraseña">
+    <button onclick="actualizarCredenciales()" class="btn" style="background:#111;color:#fff;margin-top:10px"><span class="material-icons" style="font-size:16px">save</span> Actualizar credenciales</button>
+    <p id="msgCred" style="font-size:11px;color:#16a34a;margin-top:8px;display:none"></p>
+  </div>
+
+  <div style="margin-top:14px;padding:12px;background:#f9fafb;border-radius:12px">
+    <p style="font-size:11px;font-weight:800">Tarifa: Mandado $5 / Transporte $10</p>
   </div>
 </div>
 
@@ -119,6 +147,9 @@ function buscarPorNombre(){
   });
 }
 
+function openConfig(){ document.getElementById('modalConfig').classList.add('open'); document.getElementById('modalBg').classList.add('open'); }
+function closeConfig(){ document.getElementById('modalConfig').classList.remove('open'); document.getElementById('modalBg').classList.remove('open'); }
+
 function iniciar(){
   document.getElementById('pNombre').innerText=repartidorActual.nombre||'Repartidor';
   document.getElementById('pMoto').innerText=repartidorActual.moto||'';
@@ -127,9 +158,11 @@ function iniciar(){
   document.getElementById('cambiarUsuario').placeholder='Usuario actual: '+(repartidorActual.usuario||'');
   if(repartidorActual.foto) document.getElementById('pAvatar').src=repartidorActual.foto;
   cargarVentas();
+  cargarGastos();
 }
 
 let ventasAll=[];
+let gastosAll=[];
 function cargarVentas(){
   db.ref('ventas').on('value', snap=>{
     const data=snap.val()||{};
@@ -153,8 +186,16 @@ function cargarVentas(){
   });
 }
 
+function cargarGastos(){
+  db.ref(`gastos/${repartidorKey}`).on('value', snap=>{
+    const data=snap.val()||{};
+    gastosAll=Object.values(data).map(g=>({ ...g, _mes:(g.fecha||'').slice(0,7) || g.mes || '' }));
+    renderStats();
+  });
+}
+
 function initFiltroMes(){
-  const meses=[...new Set(ventasAll.map(v=>v._mes))].filter(Boolean).sort().reverse();
+  const meses=[...new Set([...ventasAll.map(v=>v._mes), ...gastosAll.map(g=>g._mes)])].filter(Boolean).sort().reverse();
   const sel=document.getElementById('filtroMes');
   const actual=sel.value;
   sel.innerHTML='<option value="todos">Todos los meses</option>';
@@ -171,7 +212,11 @@ function fmt(n){ return '$'+Number(n).toLocaleString('es-MX'); }
 function renderStats(){
   const mesSel=document.getElementById('filtroMes').value;
   let lista=ventasAll;
-  if(mesSel!=='todos') lista=ventasAll.filter(v=>v._mes===mesSel);
+  let listaG=gastosAll;
+  if(mesSel!=='todos'){
+    lista=ventasAll.filter(v=>v._mes===mesSel);
+    listaG=gastosAll.filter(g=>g._mes===mesSel || g.mes===mesSel);
+  }
 
   let debe=0, pagado=0, mandados=0, transportes=0, ingresos=0;
   lista.forEach(v=>{
@@ -180,17 +225,40 @@ function renderStats(){
     else if(v._estado==='pagado'){ pagado+=v._tarifa; }
   });
 
+  let gastos=0;
+  listaG.forEach(g=> gastos+=parseFloat(g.monto||0));
+
+  let totalFinal = ingresos - gastos;
+
   document.getElementById('debe').innerText=fmt(debe);
   document.getElementById('debeDet').innerText=mandados+' mandados x $5 / '+transportes+' transportes x $10';
   document.getElementById('pagado').innerText=fmt(pagado);
   document.getElementById('totalServ').innerText=lista.length.toLocaleString('es-MX');
   document.getElementById('mesDet').innerText= mesSel==='todos'? lista.length+' total' : lista.length+' en '+mesSel;
   document.getElementById('ingresosTotales').innerText=fmt(ingresos);
-  document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): '+fmt(ingresos);
+  document.getElementById('gastosTotales').innerText=fmt(gastos);
+  document.getElementById('gastosDet').innerText=listaG.length+' gastos en filtro';
+  document.getElementById('totalFinal').innerText=fmt(totalFinal);
+  document.getElementById('pIngMes').innerText='Ingresos mes ('+mesSel+'): '+fmt(ingresos)+' - Gastos '+fmt(gastos)+' = '+fmt(totalFinal);
 
   const tbody=document.getElementById('tablaMis'); tbody.innerHTML='';
   lista.sort((a,b)=> (b._fecha||'').localeCompare(a._fecha||'')).forEach(v=>{
     tbody.innerHTML+=`<tr><td>${v._fecha}</td><td>${v._esTrans?'transporte':'mandado'}</td><td>${fmt(v._precioCli)}</td><td>${fmt(v._tarifa)}</td><td style="color:#111">${fmt(v._ganancia)}</td><td><span class="badge ${v._estado==='pagado'?'pagado':'pendiente'}">${v._estado.toUpperCase()}</span></td></tr>`;
+  });
+}
+
+function guardarGasto(){
+  const desc=document.getElementById('gastoDesc').value.trim();
+  const monto=parseFloat(document.getElementById('gastoMonto').value);
+  if(!desc || !monto || monto<=0){ alert('Escribe descripción y monto válido'); return; }
+  const mesSel=document.getElementById('filtroMes').value;
+  const fechaHoy=new Date().toISOString().slice(0,10);
+  const data={ descripcion:desc, monto:monto, fecha:fechaHoy, mes: mesSel==='todos'? fechaHoy.slice(0,7) : mesSel, timestamp:Date.now() };
+  db.ref(`gastos/${repartidorKey}`).push(data).then(()=>{
+    document.getElementById('gastoDesc').value='';
+    document.getElementById('gastoMonto').value='';
+    const m=document.getElementById('msgGasto'); m.innerText='Gasto guardado ✓'; m.style.display='block';
+    setTimeout(()=>m.style.display='none',2000);
   });
 }
 
@@ -227,8 +295,10 @@ function pagarWA(){
   const debe=document.getElementById('debe').innerText;
   const det=document.getElementById('debeDet').innerText;
   const ing=document.getElementById('ingresosTotales').innerText;
+  const gastos=document.getElementById('gastosTotales').innerText;
+  const total=document.getElementById('totalFinal').innerText;
   const mes=document.getElementById('filtroMes').value;
-  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mes: ${mes}. Mi deuda es ${debe} - ${det}. Mis ingresos: ${ing}.`;
+  const msg=`Hola Kigo, soy ${repartidorActual.nombre}. Mes: ${mes}. Mi deuda es ${debe} - ${det}. Ingresos: ${ing}, Gastos: ${gastos}, Me queda: ${total}.`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
