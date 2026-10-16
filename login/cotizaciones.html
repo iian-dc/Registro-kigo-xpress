@@ -171,33 +171,10 @@ function enviarPedido(){
   const precio=document.getElementById('precioAliado').value;
   const tRec=document.getElementById('tiempoManual').value || 'por confirmar';
   if(!aliado||!entrega){ alert('Completa datos'); return; }
-  const datos={ tipo, servicio, cliente:aliado, direccionRecogida:dirAliado, direccion:entrega, nombreRecibe:nombreR, telefono:telR, precio, tiempoRecoger:tRec, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'pendiente' };
-  db.ref('ventas').push(datos);
-  db.ref('pedidos_repartidor').push(datos);
+
+  // YA NO GUARDA EN HISTORIAL - SOLO WHATSAPP
   const numeroPedido = Math.floor(1000 + Math.random() * 9000);
-  const msgRep = 
-`🚨 #${numeroPedido}
-📍 Recoger
-👤 ${aliado}
-⏱️ Recoger en "${tRec}"
-
-📍 Dirección del aliado:
-${dirAliado}
-
-🏠 Dirección de entrega:
-${entrega}
-
-👤 Nombre del cliente:
-${nombreR}
-
-📞 Número de teléfono:
-${telR}
-
-💰 Valor del servicio:
-$${precio}
-
-🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
-
+  const msgRep = `🚨 #${numeroPedido}\n📍 Recoger\n👤 ${aliado}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección del aliado:\n${dirAliado}\n\n🏠 Dirección de entrega:\n${entrega}\n\n👤 Nombre del cliente:\n${nombreR}\n\n📞 Número de teléfono:\n${telR}\n\n💰 Valor del servicio:\n$${precio}\n\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`, '_blank');
 }
 </script>
