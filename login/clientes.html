@@ -53,7 +53,7 @@ body{background:#f8f9fb;zoom:0.9}
 .rankBar{height:6px;background:#eef2f7;border-radius:999px;margin-top:6px;overflow:hidden}.rankBarFill{height:100%;background:#E10600;border-radius:999px}
 .rankPed{font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:14px}.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.modal{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:460px;box-shadow:0 10px 30px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
 .modal h3{font-size:14px;font-weight:800;margin-bottom:12px}
 .modal label{font-size:11px;font-weight:700;color:#6b7280;margin:8px 4px 4px;display:block}
 .modal input,.modal select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;font-size:12px;margin-bottom:6px}
@@ -61,7 +61,8 @@ body{background:#f8f9fb;zoom:0.9}
 .btn-save{background:#E10600;color:#fff;border-radius:999px;padding:9px 16px;border:none;font-weight:700;cursor:pointer}
 .btn-cancel{background:#f3f4f6;border-radius:999px;padding:9px 16px;border:none;font-weight:600;cursor:pointer}
 .info-box{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;margin:8px 0;font-size:11px}
-.pac-container{z-index:9999!important;border-radius:12px}
+#miniMapa{width:100%;height:180px;border-radius:12px;margin-top:8px;border:1px solid #e5e7eb;display:none}
+.pac-container{z-index:99999!important;border-radius:12px;margin-top:4px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
 </style>
 </head>
 <body>
@@ -112,7 +113,8 @@ body{background:#f8f9fb;zoom:0.9}
     <h3>Editar cliente</h3>
     <label>Nombre del cliente</label><input id="eNombre">
     <label>Teléfono</label><input id="eTelefono" placeholder="418 123 4567">
-    <label>Dirección exacta</label><input id="eDireccion" placeholder="Calle, colonia, número">
+    <label>Dirección exacta</label><input id="eDireccion" placeholder="Calle, colonia, número - escribe para buscar">
+    <div id="miniMapa"></div>
     <div class="info-box" id="eInfo"></div>
     <label>Estado</label><select id="eEstado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select>
     <div class="modal-actions"><button class="btn-cancel" onclick="cerrarModal()">Cancelar</button><button class="btn-save" onclick="guardarEdicion()">Guardar</button></div>
@@ -126,20 +128,46 @@ const db=firebase.database();
 let clientes=[], filtrados=[], pagina=1, porPag=8, tab='lista';
 let editKey=null;
 let autocompleteDireccion=null;
+let miniMap=null;
+let miniMarker=null;
 
 function initGooglePlaces(){
   const input = document.getElementById('eDireccion');
-  if(!input || !google.maps.places) return;
+  if(!input || !window.google || !google.maps.places) return;
+  
+  if(!miniMap){
+    miniMap = new google.maps.Map(document.getElementById('miniMapa'), {
+      center: { lat: 21.1576, lng: -100.9339 },
+      zoom: 15,
+      disableDefaultUI: true,
+      zoomControl: true
+    });
+  }
+
+  if(autocompleteDireccion) return;
   autocompleteDireccion = new google.maps.places.Autocomplete(input, {
     componentRestrictions: { country: "mx" },
-    fields: ["formatted_address","geometry","address_components"],
+    fields: ["formatted_address","geometry"],
     types: ["address"]
   });
   autocompleteDireccion.addListener("place_changed", ()=>{
     const place = autocompleteDireccion.getPlace();
-    if(place && place.formatted_address){
-      input.value = place.formatted_address;
-    }
+    if(!place || !place.geometry) return;
+    input.value = place.formatted_address;
+    
+    // Mostrar minimapa
+    const mapaDiv = document.getElementById('miniMapa');
+    mapaDiv.style.display='block';
+    setTimeout(()=>{ google.maps.event.trigger(miniMap, 'resize'); }, 100);
+    
+    miniMap.setCenter(place.geometry.location);
+    miniMap.setZoom(16);
+    if(miniMarker) miniMarker.setMap(null);
+    miniMarker = new google.maps.Marker({
+      position: place.geometry.location,
+      map: miniMap,
+      animation: google.maps.Animation.DROP
+    });
   });
 }
 
@@ -304,12 +332,26 @@ function abrirEditar(nombre){
   document.getElementById('eDireccion').value=c.direccion||'';
   document.getElementById('eEstado').value=c.estado||'Activo';
   document.getElementById('eInfo').innerHTML=`<b>Historial organizado por fecha:</b><br>${c.total} pedidos | Total: $${c.totalDinero.toFixed(0)}<br>Último: ${formatFecha(c.ultimo)}<br>Fechas: ${c.historial.slice(0,3).map(h=>formatFecha(h.fecha)+' ($'+h.valor+')').join(', ')}`;
+  document.getElementById('miniMapa').style.display='none';
+  if(miniMarker){ miniMarker.setMap(null); miniMarker=null; }
   document.getElementById('modalEdit').classList.add('open');
   setTimeout(()=>{
-    if(!autocompleteDireccion) initGooglePlaces();
-  },200);
+    initGooglePlaces();
+    if(c.direccion && miniMap){
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: c.direccion }, (results, status)=>{
+        if(status==='OK' && results[0]){
+          document.getElementById('miniMapa').style.display='block';
+          google.maps.event.trigger(miniMap, 'resize');
+          miniMap.setCenter(results[0].geometry.location);
+          if(miniMarker) miniMarker.setMap(null);
+          miniMarker = new google.maps.Marker({ position: results[0].geometry.location, map: miniMap });
+        }
+      });
+    }
+  },300);
 }
-function cerrarModal(){ document.getElementById('modalEdit').classList.remove('open'); editKey=null; }
+function cerrarModal(){ document.getElementById('modalEdit').classList.remove('open'); document.getElementById('miniMapa').style.display='none'; editKey=null; }
 function guardarEdicion(){
   const nuevoNombre=document.getElementById('eNombre').value.trim();
   const tel=document.getElementById('eTelefono').value.trim();
