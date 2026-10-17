@@ -61,6 +61,7 @@ body{background:#f8f9fb;zoom:0.9}
 .btn-save{background:#E10600;color:#fff;border-radius:999px;padding:9px 16px;border:none;font-weight:700;cursor:pointer}
 .btn-cancel{background:#f3f4f6;border-radius:999px;padding:9px 16px;border:none;font-weight:600;cursor:pointer}
 .info-box{background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;padding:10px;margin:8px 0;font-size:11px}
+.pac-container{z-index:9999!important;border-radius:12px}
 </style>
 </head>
 <body>
@@ -124,6 +125,24 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 let clientes=[], filtrados=[], pagina=1, porPag=8, tab='lista';
 let editKey=null;
+let autocompleteDireccion=null;
+
+function initGooglePlaces(){
+  const input = document.getElementById('eDireccion');
+  if(!input || !google.maps.places) return;
+  autocompleteDireccion = new google.maps.places.Autocomplete(input, {
+    componentRestrictions: { country: "mx" },
+    fields: ["formatted_address","geometry","address_components"],
+    types: ["address"]
+  });
+  autocompleteDireccion.addListener("place_changed", ()=>{
+    const place = autocompleteDireccion.getPlace();
+    if(place && place.formatted_address){
+      input.value = place.formatted_address;
+    }
+  });
+}
+
 function formatFecha(f){ if(!f) return '-'; if(f.includes('-')){const [y,m,d]=f.split('-');return `${d}/${m}/${y}`;}return f;}
 function normalizarCliente(nombre){
   if(!nombre) return nombre;
@@ -286,6 +305,9 @@ function abrirEditar(nombre){
   document.getElementById('eEstado').value=c.estado||'Activo';
   document.getElementById('eInfo').innerHTML=`<b>Historial organizado por fecha:</b><br>${c.total} pedidos | Total: $${c.totalDinero.toFixed(0)}<br>Último: ${formatFecha(c.ultimo)}<br>Fechas: ${c.historial.slice(0,3).map(h=>formatFecha(h.fecha)+' ($'+h.valor+')').join(', ')}`;
   document.getElementById('modalEdit').classList.add('open');
+  setTimeout(()=>{
+    if(!autocompleteDireccion) initGooglePlaces();
+  },200);
 }
 function cerrarModal(){ document.getElementById('modalEdit').classList.remove('open'); editKey=null; }
 function guardarEdicion(){
@@ -325,5 +347,6 @@ function cambiarPag(d){ const max=Math.max(1,Math.ceil(filtrados.length/porPag))
 document.getElementById('buscar').addEventListener('input',aplicarFiltros);
 document.getElementById('fMes').addEventListener('change',aplicarFiltros);
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTV1sm6McEIkv-cheaVFCD_svp_a--6wg&libraries=places&callback=initGooglePlaces" async defer></script>
 </body>
 </html>
