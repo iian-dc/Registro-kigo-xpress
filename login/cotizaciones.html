@@ -98,17 +98,25 @@ body{background:#f8f9fb;zoom:0.9}
     </div>
   </div>
 
-  <!-- FORM: ALIADOS COMPRAR -->
+  <!-- FORM: ALIADOS COMPRAR REORGANIZADO -->
   <div id="formAliadosComprar" class="formBlock">
-    <label class="label">Nombre de aliado</label>
+    <label class="label">Producto que se va a comprar</label>
+    <div class="input-box"><input id="productoAC" placeholder="Qué se va a comprar"></div>
+
+    <label class="label">En qué restaurante o negocio se va a comprar</label>
+    <div class="input-box"><input id="negocioAC" placeholder="Ej: Oxxo, Farmacia, Restaurante..."></div>
+
+    <label class="label">Dirección donde se va a comprar</label>
+    <div class="input-box"><input id="dirCompraAC" placeholder="Dirección de donde se va a comprar..."></div>
+
+    <label class="label">Seleccionar aliado</label>
     <div class="input-box" style="overflow:visible">
       <input id="aliadoNombreC" placeholder="Nombre del aliado..." oninput="buscarAliadoC()">
       <button class="btn-clear" id="clearAliadoC" onclick="limpiar('aliadoNombreC','clearAliadoC')">✕</button>
       <div class="sugList" id="sugAliadosC"></div>
     </div>
     <div id="aliadoInfoC" style="display:none"><div class="info" style="text-align:left;margin-top:10px"><span>Dirección del aliado</span><b id="aliadoDireccionC">-</b></div></div>
-    <label class="label">Producto a comprar</label>
-    <div class="input-box"><input id="productoAC" placeholder="Qué se va a comprar"></div>
+
     <label class="label">Dirección de entrega</label>
     <div class="input-box"><input id="deliveryAliadoC" placeholder="Dirección de entrega..."></div>
     <label class="label">Nombre de quien recibe</label>
@@ -219,7 +227,7 @@ function initMap(){
   map = new google.maps.Map(document.getElementById("map"), { center: { lat: 21.1576, lng: -100.9339 }, zoom: 13 });
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers:true, polylineOptions:{ strokeColor:"#E10600", strokeWeight:5 } });
-  const inputs = ["deliveryAliado","deliveryAliadoC","nuevoDirRecoger","nuevoDirEntregaR","nuevoDirCompraC","nuevoDirEntregaC"];
+  const inputs = ["deliveryAliado","deliveryAliadoC","nuevoDirRecoger","nuevoDirEntregaR","nuevoDirCompraC","nuevoDirEntregaC","dirCompraAC"];
   inputs.forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
@@ -282,7 +290,7 @@ function setTiempo(formId,min, el){ document.querySelectorAll('#'+formId+' .tiem
 function calcularRutaSegunFormulario(){
   let origen='', destino='';
   if(tipo==='aliados' && servicio==='recoger'){ origen=document.getElementById('aliadoDireccion').innerText; destino=document.getElementById('deliveryAliado').value; }
-  if(tipo==='aliados' && servicio==='comprar'){ origen=document.getElementById('aliadoDireccionC').innerText; destino=document.getElementById('deliveryAliadoC').value; }
+  if(tipo==='aliados' && servicio==='comprar'){ origen=document.getElementById('dirCompraAC').value || document.getElementById('aliadoDireccionC').innerText; destino=document.getElementById('deliveryAliadoC').value; }
   if(tipo==='nuevo' && servicio==='recoger'){ origen=document.getElementById('nuevoDirRecoger').value; destino=document.getElementById('nuevoDirEntregaR').value; }
   if(tipo==='nuevo' && servicio==='comprar'){ origen=document.getElementById('nuevoDirCompraC').value; destino=document.getElementById('nuevoDirEntregaC').value; }
   if(!origen || origen==='-' || !destino) return;
@@ -318,8 +326,6 @@ function resetTodo(){
   if(markerPickup) markerPickup.setMap(null);
   if(markerDelivery) markerDelivery.setMap(null);
 }
-
-// ENVIOS ORIGINALES
 function enviarCotizacion(){
   const dirAliado=document.getElementById('aliadoDireccion').innerText;
   const entrega=document.getElementById('deliveryAliado').value.trim();
@@ -343,32 +349,34 @@ function enviarPedido(){
   const msgRep = `🚨 #${numeroPedido}\n📍 Recoger\n👤 ${aliado}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección del aliado:\n${dirAliado}\n\n🏠 Dirección de entrega:\n${entrega}\n\n👤 Nombre del cliente:\n${nombreR}\n\n📞 Número de teléfono:\n${telR}\n\n💰 Valor del servicio:\n$${precio}\n\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`, '_blank');
 }
-// ALIADOS COMPRAR
 function enviarCotizacionAliadoComprar(){
+  const prod=document.getElementById('productoAC').value;
+  const negocio=document.getElementById('negocioAC').value;
+  const dirCompra=document.getElementById('dirCompraAC').value;
   const aliado=document.getElementById('aliadoNombreC').value;
   const dirAliado=document.getElementById('aliadoDireccionC').innerText;
-  const prod=document.getElementById('productoAC').value;
   const entrega=document.getElementById('deliveryAliadoC').value;
   const precio=document.getElementById('precioAliadoC').value;
-  const datos={ tipo, servicio, aliado, dirAliado, producto:prod, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
+  const datos={ tipo, servicio, producto:prod, negocio, dirCompra, aliado, dirAliado, entrega, precio, distancia:distanciaKm.toFixed(1), fecha:new Date().toISOString().slice(0,10), estado:'cotizado' };
   db.ref('cotizaciones').push(datos);
-  const msg=`🏍️ *KIGO XPRESS* 🏍️\n📦 *COTIZACIÓN - COMPRAR*\n\n👤 Aliado: ${aliado}\n📍 Recoger en: ${dirAliado}\n🛒 Producto: ${prod}\n🏠 Entrega: ${entrega}\n💰 Servicio: $${precio}\n🛣️ ${distanciaKm.toFixed(1)} km\n¿Confirmamos? ✅`;
+  const msg=`🏍️ *KIGO XPRESS* 🏍️\n📦 *COTIZACIÓN - COMPRAR (ALIADO)*\n\n🛒 Producto: ${prod}\n🏪 Negocio: ${negocio}\n📍 Donde comprar: ${dirCompra}\n👤 Aliado: ${aliado}\n📍 Dir aliado: ${dirAliado}\n🏠 Entrega: ${entrega}\n💰 Servicio: $${precio}\n🛣️ ${distanciaKm.toFixed(1)} km\n¿Confirmamos? ✅`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
 function enviarPedidoAliadoComprar(){
+  const prod=document.getElementById('productoAC').value;
+  const negocio=document.getElementById('negocioAC').value;
+  const dirCompra=document.getElementById('dirCompraAC').value;
   const aliado=document.getElementById('aliadoNombreC').value;
   const dirAliado=document.getElementById('aliadoDireccionC').innerText;
-  const prod=document.getElementById('productoAC').value;
   const entrega=document.getElementById('deliveryAliadoC').value;
   const nombreR=document.getElementById('nombreRecibeC').value;
   const telR=document.getElementById('telRecibeC').value;
   const precio=document.getElementById('precioAliadoC').value;
   const tRec=document.getElementById('tiempoManualAC').value||'por confirmar';
   const numeroPedido=Math.floor(1000+Math.random()*9000);
-  const msgRep=`🚨 #${numeroPedido}\n📍 Comprar\n👤 ${aliado}\n🛒 ${prod}\n⏱️ Comprar en "${tRec}"\n\n📍 Dirección aliado:\n${dirAliado}\n\n🏠 Entrega:\n${entrega}\n\n👤 Cliente: ${nombreR}\n📞 ${telR}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirAliado)}&destination=${encodeURIComponent(entrega)}`;
+  const msgRep=`🚨 #${numeroPedido}\n📍 Comprar - Aliado\n🛒 ${prod}\n🏪 ${negocio}\n⏱️ Comprar en "${tRec}"\n\n📍 Dirección compra:\n${dirCompra}\n\n👤 Aliado: ${aliado}\n📍 Dir aliado: ${dirAliado}\n\n🏠 Entrega:\n${entrega}\n\n👤 Cliente: ${nombreR}\n📞 ${telR}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirCompra)}&destination=${encodeURIComponent(entrega)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`,'_blank');
 }
-// NUEVO RECOGER
 function enviarCotizacionNuevoRecoger(){
   const nombre=document.getElementById('nuevoNombreR').value;
   const tel=document.getElementById('nuevoTelR').value;
@@ -393,7 +401,6 @@ function enviarPedidoNuevoRecoger(){
   const msgRep=`🚨 #${numeroPedido}\n📍 Recoger - Cliente Nuevo\n👤 Cliente: ${nombre}\n📞 ${tel}\n⏱️ Recoger en "${tRec}"\n\n📍 Dirección recoger:\n${dirR}\n\n🏠 Entrega:\n${dirE}\n\n👤 Recibe: ${recibe}\n📞 Recibe: ${telRec}\n\n💰 Servicio: $${precio}\n🗺️ Ruta: https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(dirR)}&destination=${encodeURIComponent(dirE)}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msgRep)}`,'_blank');
 }
-// NUEVO COMPRAR
 function enviarCotizacionNuevoComprar(){
   const prod=document.getElementById('nuevoProductoC').value;
   const donde=document.getElementById('nuevoDondeC').value;
